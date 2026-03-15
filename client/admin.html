@@ -1,0 +1,1132 @@
+<!doctype html>
+<html lang="pt-BR" data-theme-variant="default">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>DARAH Pajamas · Admin</title>
+
+    <!-- Favicon and site icons -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#FDE8E9" />
+
+    <!-- Cinzel font for the whole site -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Great+Vibes&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Layout base */
+      .admin-main {
+        max-width: 1180px;
+        margin: 24px auto 40px;
+        padding: 0 16px;
+      }
+
+      .admin-status {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .admin-status.ok {
+        color: #2e7d32;
+      }
+      .admin-status.error {
+        color: var(--error);
+      }
+
+      /* Login */
+      .admin-login {
+        max-width: 420px;
+        margin: 40px auto;
+      }
+      .admin-login-card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        padding: 20px 18px 22px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--border-soft);
+      }
+      .admin-login-subtitle {
+        margin: 0 0 18px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .admin-login-error {
+        display: none;
+      }
+
+      /* Form fields */
+      .admin-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 14px;
+      }
+      .admin-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+      .admin-input,
+      .admin-textarea,
+      .admin-select {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--border-soft);
+        padding: 10px 12px;
+        font-size: 14px;
+        background: var(--input-bg, #ffffff);
+        color: var(--text-main);
+      }
+      .admin-textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+      .admin-input:focus,
+      .admin-textarea:focus,
+      .admin-select:focus {
+        outline: none;
+        border-color: var(--accent-soft);
+        box-shadow: 0 0 0 1px var(--accent-soft);
+      }
+
+      /* Buttons */
+      .admin-button-secondary {
+        border-radius: 999px;
+        border: 1px solid var(--border-soft);
+        padding: 6px 12px;
+        font-size: 12px;
+        background: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      }
+      .admin-button-secondary:hover {
+        background: rgba(255, 255, 255, 1);
+      }
+      .admin-button-ghost {
+        border-radius: 999px;
+        border: 1px solid transparent;
+        padding: 4px 8px;
+        font-size: 11px;
+        background: transparent;
+        cursor: pointer;
+        color: var(--text-muted);
+      }
+      .admin-button-ghost:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      /* Admin header actions */
+      .admin-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .admin-badge-top {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-muted);
+        backdrop-filter: blur(6px);
+      }
+
+      /* Theme toggle removed */
+
+      .admin-user-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .admin-user-label {
+        max-width: 140px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .admin-logout-button {
+        font-size: 11px;
+        padding: 5px 10px;
+      }
+
+      /* Hide nav entirely while on login screen */
+      body.admin-page.is-admin-login .main-nav {
+        display: none;
+      }
+
+      /* Loading welcome */
+      .admin-panel {
+        display: none;
+      }
+      .admin-loading-section {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        margin-top: 40px;
+      }
+      .admin-loading-card {
+        text-align: center;
+        background: var(--card-bg);
+        border-radius: 18px;
+        padding: 24px 20px 26px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--border-soft);
+      }
+      .loading-circle-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 24px 0;
+      }
+      .loading-circle {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .loading-circle-fill {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: conic-gradient(var(--accent-blue) 0deg, #f0f0f0 0deg);
+        transform: rotate(-90deg);
+        animation: loadingFill 4s linear forwards;
+      }
+      .loading-circle-inner {
+        position: absolute;
+        inset: 16px;
+        border-radius: 50%;
+        background: var(--card-bg);
+      }
+      .loading-circle-message {
+        position: relative;
+        z-index: 2;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        padding: 0 12px;
+      }
+      @keyframes loadingFill {
+        from {
+          background: conic-gradient(var(--accent-blue) 0deg, #f0f0f0 0deg);
+        }
+        to {
+          background: conic-gradient(var(--accent-blue) 360deg, #f0f0f0 0deg);
+        }
+      }
+
+      /* Admin product grid mirrors storefront */
+      .admin-product-grid {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+      @media (max-width: 900px) {
+        .admin-product-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 640px) {
+        .admin-product-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .admin-product-card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: var(--shadow-soft);
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border-soft);
+        position: relative;
+      }
+
+      .admin-product-card.add-card {
+        border-style: dashed;
+        border-color: var(--accent-soft);
+        background: rgba(255, 255, 255, 0.7);
+        color: var(--text-muted);
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .add-card-inner {
+        padding: 20px 16px 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .add-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        border: 1px solid var(--accent-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+
+      .admin-product-image-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 75%;
+        background: #ececec;
+        overflow: hidden;
+      }
+      .admin-product-image-wrapper > img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .admin-product-body {
+        padding: 12px 14px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .admin-product-title {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .admin-product-description {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .admin-product-meta-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+        gap: 6px;
+      }
+      .admin-product-price {
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .admin-product-stock {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+      .admin-product-actions-row {
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 14px 12px;
+      }
+
+      /* Hero and notices */
+      .hero-admin-note {
+        margin: 10px 0 0;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .notice-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 12px;
+      }
+      .notice-row .admin-label {
+        margin: 0;
+      }
+
+      .admin-notice-list {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .admin-notice-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.02);
+        font-size: 12px;
+      }
+      .admin-notice-text {
+        flex: 1;
+      }
+
+      /* Product modal */
+      .admin-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.38);
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 20px 12px;
+        z-index: 40;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .admin-modal {
+        width: 100%;
+        max-width: 460px;
+        background: var(--card-bg);
+        border-radius: 18px;
+        box-shadow: var(--shadow-soft);
+        padding: 18px 18px 20px;
+        margin-top: 32px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--border-soft);
+      }
+      .admin-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .admin-modal-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .admin-modal-close {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        color: var(--text-muted);
+      }
+      .admin-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .admin-price-wrapper {
+        display: flex;
+        align-items: center;
+        border-radius: 10px;
+        border: 1px solid var(--border-soft);
+        background: var(--input-bg, #ffffff);
+        padding-right: 10px;
+      }
+      .admin-price-prefix {
+        padding: 0 8px 0 10px;
+        font-size: 13px;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+      .admin-price-input {
+        border: none;
+        flex: 1;
+        padding: 10px 0;
+        font-size: 14px;
+        background: transparent;
+      }
+      .admin-price-input:focus {
+        outline: none;
+      }
+
+      .admin-image-upload-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .admin-image-preview {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .admin-image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .admin-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: var(--text-muted);
+      }
+
+      /* Thumbnail gallery for multiple product images */
+      .admin-image-thumbs {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .admin-image-thumb {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+        border: 1px solid transparent;
+        position: relative;
+      }
+      .admin-image-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .admin-image-thumb.active {
+        border-color: var(--accent-soft);
+        box-shadow: 0 0 0 1px var(--accent-soft);
+      }
+
+      /* Mobile dropdown extras (theme, user, logout) */
+      .admin-mobile-extras {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border-soft);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .admin-mobile-extras .admin-mobile-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .admin-mobile-extras .admin-mobile-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+      .admin-mobile-extras .admin-mobile-user {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-main);
+        max-width: 180px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .admin-mobile-extras .admin-mobile-badge {
+        font-size: 11px;
+        color: var(--text-muted);
+        background: rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-soft);
+        border-radius: 999px;
+        padding: 4px 10px;
+        width: fit-content;
+      }
+
+      @media (max-width: 640px) {
+        .admin-login {
+          margin-top: 28px;
+        }
+        .admin-login-card {
+          padding: 18px 14px 20px;
+        }
+        .admin-main {
+          padding: 0 12px 24px;
+        }
+
+        /* On small screens, put all controls into the hamburger dropdown */
+        .admin-page .main-nav {
+          padding: 0 12px;
+        }
+        .admin-page .main-nav .nav-left {
+          display: none;
+        }
+        .admin-page .main-nav .admin-header-actions {
+          display: none;
+        }
+        .admin-badge-top {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="admin-page">
+    <!-- Cabeçalho igual à vitrine, com seletor de tema -->
+    <header class="site-header">
+      <div class="brand-bar">
+        <span class="brand-name">DARAH</span><span class="brand-name-pajamas">Pajamas</span>
+      </div>
+      <nav class="main-nav">
+        <!-- Botão de menu mobile (três linhas) -->
+        <button
+          class="nav-mobile-toggle"
+          type="button"
+          aria-label="Abrir menu de navegação"
+          aria-expanded="false"
+          aria-controls="navDropdown"
+        >
+          <span class="nav-mobile-toggle-box">
+            <span class="nav-mobile-toggle-line"></span>
+            <span class="nav-mobile-toggle-line"></span>
+            <span class="nav-mobile-toggle-line"></span>
+          </span>
+        </button>
+
+        <div class="nav-left">
+          <button class="nav-link active" data-view="home">
+            Início
+          </button>
+          <button class="nav-link" data-view="about">
+            Sobre nós
+          </button>
+          <button class="nav-link" data-view="babydoll">
+            Babydoll
+          </button>
+          <button class="nav-link" data-view="camisolas">
+            Camisolas
+          </button>
+          <button class="nav-link" data-view="longos">
+            Longos
+          </button>
+          <button class="nav-link" data-view="infantil">
+            Infantil
+          </button>
+        </div>
+
+        <div class="admin-header-actions">
+          <span class="admin-badge-top">Painel administrativo privado</span>
+          <div class="admin-user-box">
+            <span id="adminUserNameLabel" class="admin-user-label"></span>
+            <button
+              id="adminLogoutButton"
+              type="button"
+              class="admin-button-secondary admin-logout-button"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+
+        <!-- Dropdown de navegação em mobile, preenchido por JS -->
+        <div id="navDropdown" class="nav-dropdown"></div>
+      </nav>
+    </header>
+
+    <main class="main-content admin-main">
+      <!-- Login -->
+      <section id="adminLoginSection" class="admin-login">
+        <div class="admin-login-card">
+          <h1 class="section-title" style="margin-top:0">Administração DARAH</h1>
+          <p class="admin-login-subtitle">
+            Digite seu usuário e senha para entrar no painel da DARAH Pajamas.
+          </p>
+
+          <div class="admin-field">
+            <label for="adminUsername" class="admin-label">Usuário</label>
+            <input
+              id="adminUsername"
+              class="admin-input"
+              type="text"
+              autocomplete="username"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label for="adminPassword" class="admin-label">Senha</label>
+            <input
+              id="adminPassword"
+              class="admin-input"
+              type="password"
+              autocomplete="current-password"
+            />
+          </div>
+
+          <button
+            id="adminLoginButton"
+            class="primary-button"
+            style="width:100%;margin-top:4px"
+          >
+            Entrar
+          </button>
+          <p id="adminLoginError" class="admin-status admin-login-error error"></p>
+        </div>
+      </section>
+
+      <!-- Carregando / boas vindas -->
+      <section
+        id="adminLoadingSection"
+        class="admin-loading-section"
+        aria-hidden="true"
+      >
+        <div class="admin-card admin-loading-card">
+          <p class="home-highlight-text">Preparando o painel administrativo.</p>
+          <div class="loading-circle-wrapper">
+            <div class="loading-circle">
+              <div class="loading-circle-fill"></div>
+              <div class="loading-circle-inner"></div>
+              <div class="loading-circle-message" id="adminWelcomeMessage">
+                Bem-vindo(a)!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Painel autenticado com as mesmas abas da vitrine -->
+      <section id="adminPanelSection" class="admin-panel">
+        <!-- VISÃO INÍCIO -->
+        <section id="view-home" class="view active-view">
+          <div class="hero">
+            <div class="hero-images" id="adminHeroGallery"></div>
+            <div class="hero-about">
+              <h2 class="hero-title">DARAH Pajamas</h2>
+
+              <div class="admin-field" style="margin-top:4px">
+                <label for="adminAboutText" class="admin-label"
+                  >Texto sobre a marca</label
+                >
+                <textarea
+                  id="adminAboutText"
+                  class="admin-textarea"
+                  placeholder="História, valores e identidade da DARAH Pajamas"
+                ></textarea>
+              </div>
+              <p class="hero-admin-note">
+                As alterações aparecem na vitrine pública após salvar.
+              </p>
+
+              <div style="margin-top:10px">
+                <input
+                  id="adminHeroImagesFile"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style="display:none"
+                />
+                <button
+                  type="button"
+                  id="adminHeroImagesFileButton"
+                  class="admin-button-secondary"
+                >
+                  Escolher fotos do dispositivo
+                </button>
+                <button
+                  id="saveHomepageBtn"
+                  class="primary-button"
+                  style="margin-left:8px"
+                >
+                  Salvar página inicial
+                </button>
+                <p id="adminHomepageStatus" class="admin-status"></p>
+                <textarea
+                  id="adminHeroImages"
+                  class="admin-textarea"
+                  style="display:none"
+                ></textarea>
+              </div>
+
+              <!-- Avisos -->
+              <div style="margin-top:16px">
+                <div class="notice-row">
+                  <span class="admin-label">Avisos do site</span>
+                  <button
+                    type="button"
+                    id="adminAddNoticeBtn"
+                    class="admin-button-secondary"
+                  >
+                    + Novo aviso
+                  </button>
+                </div>
+                <div id="adminNoticeList" class="admin-notice-list"></div>
+                <p id="adminNoticeStatus" class="admin-status"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upload Website Logo -->
+          <div class="home-highlight" style="margin-top:24px">
+            <h2>Logo do site</h2>
+            <p class="home-highlight-text" style="margin-bottom:10px">
+              Envie uma imagem para usar como favicon e logo do site em todos os navegadores e dispositivos.
+            </p>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div id="adminLogoPreview" class="admin-image-preview" style="width:48px;height:48px;">
+                <div id="adminLogoPlaceholder" class="admin-image-placeholder">+</div>
+                <img id="adminLogoPreviewImg" alt="Logo preview" style="display:none" />
+              </div>
+              <input id="adminLogoFile" type="file" accept="image/*" style="display:none" capture="environment" />
+              <button type="button" id="adminLogoUploadBtn" class="admin-button-secondary" style="background:#e8f4fd;border-color:#b3d7f0;color:#1a73e8;">
+                Upload Website Logo
+              </button>
+            </div>
+            <p id="adminLogoStatus" class="admin-status"></p>
+          </div>
+
+          <div class="home-highlight" style="margin-top:24px">
+            <h2>Seleção em destaque</h2>
+            <p class="home-highlight-text">
+              Explore nossas coleções de babydoll, camisolas, longos e infantil.
+            </p>
+          </div>
+        </section>
+
+        <!-- VISÃO SOBRE NÓS -->
+        <section id="view-about" class="view about-view">
+          <h2 class="section-title">Sobre nós</h2>
+          <div class="about-layout">
+            <div class="about-text-block">
+              <div class="admin-field">
+                <label for="adminAboutLongText" class="admin-label">
+                  Texto da página "Sobre nós"
+                </label>
+                <textarea
+                  id="adminAboutLongText"
+                  class="admin-textarea"
+                  placeholder="Conte a história da DARAH Pajamas, missão, valores e o que desejar."
+                ></textarea>
+              </div>
+              <p class="hero-admin-note">
+                Este texto aparece na aba "Sobre nós" do site público.
+              </p>
+            </div>
+            <div class="about-text-block">
+              <div class="admin-field">
+                <label class="admin-label">Fotos da página "Sobre nós"</label>
+                <div class="admin-image-upload-row">
+                  <div class="admin-image-preview" style="width:72px;height:72px;">
+                    <div
+                      id="adminAboutImagePlaceholder"
+                      class="admin-image-placeholder"
+                    >
+                      +
+                    </div>
+                    <img
+                      id="adminAboutImagePreview"
+                      alt="Pré visualização da colagem"
+                      style="display:none"
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      id="adminAboutImagesFileButton"
+                      class="admin-button-secondary"
+                    >
+                      Escolher foto(s)
+                    </button>
+                    <p class="admin-status" style="margin-top:4px">
+                      Até 4 fotos. Se nenhuma foto for adicionada, a colagem não aparece
+                      na vitrine.
+                    </p>
+                  </div>
+                </div>
+                <input
+                  id="adminAboutImagesFile"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style="display:none"
+                />
+                <textarea
+                  id="adminAboutImages"
+                  class="admin-textarea"
+                  style="display:none"
+                ></textarea>
+                <div
+                  id="adminAboutCollagePreview"
+                  class="about-collage"
+                  style="margin-top:10px"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:14px">
+            <button id="saveAboutPageBtn" class="primary-button">
+              Salvar página "Sobre nós"
+            </button>
+            <p id="adminAboutSaveStatus" class="admin-status"></p>
+          </div>
+        </section>
+
+        <!-- VISÃO BABYDOLL -->
+        <section id="view-babydoll" class="view">
+          <h2 class="section-title">Babydoll</h2>
+          <div id="grid-babydoll" class="admin-product-grid"></div>
+        </section>
+
+        <!-- VISÃO CAMISOLAS -->
+        <section id="view-camisolas" class="view">
+          <h2 class="section-title">Camisolas</h2>
+          <div id="grid-camisolas" class="admin-product-grid"></div>
+        </section>
+
+        <!-- VISÃO LONGOS -->
+        <section id="view-longos" class="view">
+          <h2 class="section-title">Longos</h2>
+          <div id="grid-longos" class="admin-product-grid"></div>
+        </section>
+
+        <!-- VISÃO INFANTIL -->
+        <section id="view-infantil" class="view">
+          <h2 class="section-title">Infantil</h2>
+          <div id="grid-infantil" class="admin-product-grid"></div>
+        </section>
+
+        <!-- Modal de produto -->
+        <div id="adminProductModalBackdrop" class="admin-modal-backdrop">
+          <div class="admin-modal">
+            <div class="admin-modal-header">
+              <h3 id="adminProductModalTitle" class="admin-modal-title">
+                Novo produto
+              </h3>
+              <button
+                type="button"
+                id="adminProductModalClose"
+                class="admin-modal-close"
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
+
+            <form id="productForm">
+              <div class="admin-field">
+                <label for="productCategory" class="admin-label">Categoria</label>
+                <select id="productCategory" class="admin-select" required>
+                  <option value="babydoll">Babydoll</option>
+                  <option value="camisolas">Camisolas</option>
+                  <option value="longos">Longos</option>
+                  <option value="infantil">Infantil</option>
+                </select>
+              </div>
+
+              <div class="admin-field">
+                <label for="productName" class="admin-label">Nome do produto</label>
+                <input id="productName" class="admin-input" type="text" required />
+              </div>
+
+              <div class="admin-field">
+                <label for="productDescription" class="admin-label">Descrição (opcional)</label>
+                <textarea
+                  id="productDescription"
+                  class="admin-textarea"
+                ></textarea>
+              </div>
+
+              <div class="admin-field">
+                <label class="admin-label">Imagens do produto</label>
+                <div class="admin-image-upload-row">
+                  <div class="admin-image-preview">
+                    <div
+                      id="productImagePlaceholder"
+                      class="admin-image-placeholder"
+                    >
+                      +
+                    </div>
+                    <img
+                      id="productImagePreview"
+                      alt="Pré visualização do produto"
+                      style="display:none"
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      id="productImageFileButton"
+                      class="admin-button-secondary"
+                    >
+                      Escolher foto(s)
+                    </button>
+                    <p class="admin-status" style="margin-top:4px">
+                      Use câmera, biblioteca de fotos ou arquivos do dispositivo.
+                      Você pode adicionar várias imagens, a primeira será a capa.
+                    </p>
+                  </div>
+                </div>
+                <input
+                  id="productImageFile"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style="display:none"
+                />
+                <input id="productImageUrl" type="text" style="display:none" />
+                <div id="productImageThumbs" class="admin-image-thumbs"></div>
+                <p class="admin-status" style="margin-top:4px">
+                  Toque em uma miniatura para defini-la como capa do produto.
+                </p>
+              </div>
+
+              <div class="admin-field">
+                <label for="productPrice" class="admin-label">
+                  Preço atual
+                </label>
+                <div class="admin-price-wrapper">
+                  <span class="admin-price-prefix">R$</span>
+                  <input
+                    id="productPrice"
+                    class="admin-price-input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    inputmode="decimal"
+                  />
+                </div>
+              </div>
+
+              <div class="admin-field">
+                <label for="productOriginalPrice" class="admin-label">
+                  Preço original (opcional, apenas para ofertas especiais)
+                </label>
+                <div class="admin-price-wrapper">
+                  <span class="admin-price-prefix">R$</span>
+                  <input
+                    id="productOriginalPrice"
+                    class="admin-price-input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    inputmode="decimal"
+                  />
+                </div>
+                <p class="admin-status" style="margin-top:4px">
+                  Se preenchido, aparecerá como valor riscado na página do produto.
+                </p>
+              </div>
+
+              <div class="admin-field">
+                <label for="productDiscountLabel" class="admin-label">
+                  Rótulo de desconto (opcional)
+                </label>
+                <input
+                  id="productDiscountLabel"
+                  class="admin-input"
+                  type="text"
+                  placeholder="Ex.: 20% off, Frete grátis, Leve 2 e pague 1"
+                />
+              </div>
+
+              <div class="admin-field">
+                <label for="productStock" class="admin-label">
+                  Estoque disponível
+                </label>
+                <input
+                  id="productStock"
+                  class="admin-input"
+                  type="number"
+                  min="0"
+                  required
+                />
+              </div>
+
+              <p id="adminProductFormStatus" class="admin-status"></p>
+
+              <div class="admin-modal-actions">
+                <button
+                  type="button"
+                  id="productDeleteButton"
+                  class="admin-button-ghost"
+                  style="display:none"
+                >
+                  Excluir produto
+                </button>
+                <button type="submit" class="primary-button">
+                  Salvar produto
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Template para aviso -->
+        <template id="noticeItemTemplate">
+          <div class="admin-notice-item">
+            <span class="admin-notice-text"></span>
+            <div>
+              <button type="button" class="admin-button-ghost admin-notice-edit">
+                Editar
+              </button>
+              <button type="button" class="admin-button-ghost admin-notice-delete">
+                Excluir
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Template para cartão de produto do admin -->
+        <template id="adminAddCardTemplate">
+          <article class="admin-product-card add-card">
+            <button
+              type="button"
+              class="add-card-inner admin-add-product-button"
+            >
+              <div class="add-card-icon">+</div>
+              <div style="font-size:13px;font-weight:500">
+                Adicionar novo produto
+              </div>
+              <div style="font-size:11px;color:var(--text-muted)">
+                Crie um cartão com foto, preço e estoque.
+              </div>
+            </button>
+          </article>
+        </template>
+
+        <template id="adminProductCardTemplate">
+          <article class="admin-product-card" data-product-id="">
+            <div class="admin-product-image-wrapper">
+              <img src="" alt="" class="admin-product-image" />
+            </div>
+            <div class="admin-product-body">
+              <h3 class="admin-product-title"></h3>
+              <p class="admin-product-description"></p>
+              <div class="admin-product-meta-row">
+                <span class="admin-product-price"></span>
+                <span class="admin-product-stock"></span>
+              </div>
+            </div>
+            <div class="admin-product-actions-row">
+              <button
+                type="button"
+                class="admin-button-secondary admin-edit-product-button"
+              >
+                Editar
+              </button>
+            </div>
+          </article>
+        </template>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© 2025 DARAH Pajamas. Todos os direitos reservados.</p>
+    </footer>
+
+    <!-- Use main.js which auto-detects admin mode -->
+    <script src="main.js" defer></script>
+  </body>
+</html>

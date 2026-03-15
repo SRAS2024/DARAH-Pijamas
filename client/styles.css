@@ -1,0 +1,1267 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Great+Vibes&display=swap");
+
+:root {
+  --banner-bg: #FDE8E9;
+  --banner-text: #C5898E;
+  --page-bg: #fff8f8;
+  --card-bg: #ffffff;
+
+  --accent: #C5898E;
+  --accent-soft: #fde8e9;
+  --border-soft: #f0c9cb;
+
+  --text-main: #4a2c2e;
+  --text-muted: #8e6b6e;
+
+  --error: #b3261e;
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.06);
+
+  /* Admin welcome loader accent */
+  --accent-blue: #f0c9cb;
+
+  /* Leve base para placeholders visuais */
+  --skeleton-base: #f0d5d7;
+  --skeleton-soft: #fdf0f1;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Pequena melhoria na experiência de navegação */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Cinzel", "Georgia", "Times New Roman", serif;
+  background: var(--page-bg);
+  color: var(--text-main);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Imagens padrão */
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Admin login só mostra o cartão de login, sem as abas */
+body.is-admin-login .main-nav {
+  display: none;
+}
+
+/* Admin: ensure nav is hidden on the login screen (credentials) */
+body.admin-page.is-admin-login .main-nav {
+  display: none;
+}
+
+/* Focus styles (keyboard friendly) */
+.nav-link:focus-visible,
+.cart-button:focus-visible,
+.primary-button:focus-visible,
+.nav-mobile-toggle:focus-visible,
+.quantity-button:focus-visible,
+.add-card-button:focus-visible {
+  outline: 3px solid rgba(78, 107, 90, 0.45);
+  outline-offset: 3px;
+}
+
+/* Header and brand bar */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--page-bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.brand-bar {
+  background: var(--banner-bg);
+  color: var(--banner-text);
+  text-align: center;
+  padding: 18px 12px;
+}
+
+.brand-name {
+  font-family: "Cinzel", "Georgia", "Times New Roman", serif;
+  font-size: 34px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #C5898E;
+}
+
+.brand-name-pajamas {
+  font-family: "Great Vibes", cursive;
+  font-size: 34px;
+  color: #C5898E;
+  margin-left: 6px;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* Navigation */
+
+.main-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+}
+
+/* Fallback when blur is not supported */
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .main-nav {
+    background: #ffffff;
+  }
+}
+
+/* Mobile hamburger toggle, hidden por padrão em telas grandes */
+.nav-mobile-toggle {
+  display: none;
+  border: none;
+  background: transparent;
+  padding: 6px;
+  margin-right: 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.nav-mobile-toggle:hover {
+  background: rgba(0, 0, 0, 0.04);
+  transform: translateY(1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.nav-mobile-toggle-box {
+  width: 22px;
+  height: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nav-mobile-toggle-line {
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+/* Estado animado quando aberto; classe será aplicada via JS */
+.nav-mobile-toggle.is-open .nav-mobile-toggle-line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.nav-mobile-toggle.is-open .nav-mobile-toggle-line:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-mobile-toggle.is-open .nav-mobile-toggle-line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.nav-left {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  border: none;
+  background: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background 0.18s ease, color 0.18s ease, transform 0.1s ease;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: translateY(1px);
+}
+
+.nav-link.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* Dropdown que exibirá as abas extras no mobile */
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding: 8px 14px 10px 14px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transform: translateY(-10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 25;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-dropdown.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Admin: dropdown buttons should behave like full width rows */
+.nav-dropdown .nav-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Device mode: keep JS heuristic and CSS in sync */
+body.is-small-device .nav-mobile-toggle {
+  display: inline-flex;
+}
+
+body.is-large-device .nav-mobile-toggle {
+  display: none;
+}
+
+body.is-small-device .nav-left {
+  flex: 1 1 auto;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+}
+
+body.is-small-device .nav-left .nav-link {
+  display: none;
+}
+
+body.is-small-device .nav-left .nav-link[data-mobile-priority="true"] {
+  display: inline-flex;
+}
+
+body.is-large-device .nav-left .nav-link {
+  display: inline-flex;
+}
+
+body.is-large-device .nav-dropdown {
+  display: none;
+}
+
+/* Cart button */
+
+.cart-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--card-bg);
+  padding: 6px 10px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+}
+
+.cart-button:hover {
+  transform: translateY(1px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--accent-soft);
+}
+
+.cart-icon {
+  font-size: 18px;
+}
+
+.cart-count {
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* Main layout */
+
+.main-content {
+  flex: 1;
+  max-width: 1180px;
+  width: 100%;
+  margin: 24px auto 40px auto;
+  padding: 0 20px;
+}
+
+/* Views */
+
+.view {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.view.active-view {
+  display: block;
+  opacity: 1;
+}
+
+/* Hero section */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 30px;
+  align-items: stretch;
+}
+
+/* Quando não houver imagens a hero vira uma coluna só */
+.hero.hero-no-images {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Collage de fotos da homepage e do admin */
+.hero-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  background: var(--skeleton-soft);
+  border-radius: 20px;
+  padding: 14px;
+  box-shadow: var(--shadow-soft);
+  min-height: 180px;
+}
+
+/* Imagens da hero na vitrine e no admin */
+/* Mostra a foto inteira, sem cortes, e adapta a altura */
+.hero-images img {
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #f5f5f5;
+}
+
+.hero-about {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 150px;
+}
+
+.hero-title {
+  margin: 0 0 12px 0;
+  font-family: "Cinzel", "Georgia", "Times New Roman", serif;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-main);
+}
+
+/* Home highlight */
+
+.home-highlight {
+  margin-top: 36px;
+  background: var(--card-bg);
+  padding: 20px 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.03);
+}
+
+.home-highlight h2 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.home-highlight-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* About view shared layout */
+
+.about-view {
+  margin-top: 10px;
+}
+
+/* Updated so text and collage stack in one column on desktop também */
+.about-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.about-text-block {
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-soft);
+  min-height: 160px;
+}
+
+.about-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-main);
+  white-space: pre-line;
+}
+
+.about-collage {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  background: var(--card-bg);
+  padding: 12px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+  min-height: 120px;
+}
+
+.about-collage img {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* Product sections */
+
+.section-title {
+  font-size: 22px;
+  margin: 10px 0 20px 0;
+  font-family: "Cinzel", "Georgia", "Times New Roman", serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  min-height: 120px;
+}
+
+.product-card {
+  background: var(--card-bg);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  animation: fadeInCard 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInCard {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger animation delays for smooth cascading effect */
+.product-card:nth-child(1) {
+  animation-delay: 0s;
+}
+.product-card:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.product-card:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.product-card:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.product-card:nth-child(5) {
+  animation-delay: 0.2s;
+}
+.product-card:nth-child(6) {
+  animation-delay: 0.25s;
+}
+.product-card:nth-child(7) {
+  animation-delay: 0.3s;
+}
+.product-card:nth-child(8) {
+  animation-delay: 0.35s;
+}
+
+/* Wrapper para imagens de produto com carrossel */
+.product-image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 80%;
+  background: #ececec;
+  overflow: hidden;
+}
+
+/* Legacy single image support: somente child img direto */
+.product-image-wrapper > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Carousel viewport e trilha ocupam a wrapper */
+.product-image-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.product-image-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.35s ease;
+  will-change: transform;
+}
+
+.product-image-track img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  flex: 0 0 100%;
+}
+
+/* Carousel controls */
+
+/* Default arrow e indicador absolutos, usados no admin e layouts sem barra central */
+.product-carousel-arrow {
+  position: absolute;
+  bottom: 10px;
+  border-radius: 999px;
+  border: none;
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  z-index: 2;
+}
+
+.product-carousel-arrow-left {
+  left: 10px;
+}
+
+.product-carousel-arrow-right {
+  right: 10px;
+}
+
+.product-carousel-arrow:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.7);
+  transform: translateY(1px);
+}
+
+.product-carousel-arrow:disabled {
+  cursor: default;
+}
+
+.product-carousel-indicator {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  z-index: 2;
+}
+
+/* Barra central usada no carrossel da vitrine */
+.product-carousel-controls {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  z-index: 2;
+}
+
+/* Dentro da barra, setas ficam inline e não absolutas */
+.product-carousel-controls .product-carousel-arrow {
+  position: static;
+  bottom: auto;
+  left: auto;
+  right: auto;
+  padding: 2px 6px;
+  font-size: 12px;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.product-carousel-controls .product-carousel-arrow:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  transform: none;
+}
+
+.product-carousel-controls .product-carousel-indicator {
+  position: static;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  padding: 0 6px;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* Product body */
+
+.product-content {
+  padding: 14px 14px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.product-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.product-description {
+  font-size: 13px;
+  color: var(--text-muted);
+  min-height: 36px;
+}
+
+.product-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+/* Price block para ofertas e produtos padrão */
+
+.product-price-block {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.product-price {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Old price na aba de ofertas */
+.product-price-original {
+  font-size: 13px;
+  text-decoration: line-through;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* Current price highlight em ofertas */
+.product-price-current {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Optional discount label pill */
+.product-discount-label {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.product-stock {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.primary-button {
+  margin-top: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  background: var(--accent);
+  color: #ffffff;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.primary-button:hover {
+  background: #2f2f2f;
+  transform: translateY(1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+}
+
+.primary-button:disabled {
+  background: #c7c7c7;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Admin product grid (espelha cards da vitrine) */
+
+.admin-product-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-product-card {
+  background: var(--card-bg);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  position: relative;
+}
+
+/* Imagem proporcional em todos os dispositivos no admin */
+.admin-product-image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 75%;
+  background: #ececec;
+  overflow: hidden;
+}
+
+/* Somente a imagem direta continua absoluta.
+   As imagens do carrossel usam .product-image-track e permanecem fluidas. */
+.admin-product-image-wrapper > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Corpo do card de produto no admin */
+
+.admin-product-body {
+  padding: 12px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.admin-product-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-product-description {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-height: 32px;
+}
+
+.admin-product-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  gap: 6px;
+}
+
+.admin-product-price {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.admin-product-stock {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.admin-product-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 14px 12px;
+  gap: 8px;
+}
+
+/* Inline editor actions keep full width buttons */
+.admin-product-actions-row .admin-button-secondary {
+  text-align: center;
+}
+
+/* Add product card */
+
+.admin-product-card.add-card {
+  border-style: dashed;
+  border-color: var(--accent-soft);
+  background: #f7f7f7;
+  color: var(--text-muted);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.add-card-inner {
+  padding: 20px 16px 22px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.add-card-text-main {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.add-card-text-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.add-card-button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.add-card-button:hover {
+  background: #2f2f2f;
+  transform: translateY(1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+}
+
+/* Checkout */
+
+.checkout-view {
+  margin-top: 10px;
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.9fr);
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.checkout-items {
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  min-height: 120px;
+}
+
+.checkout-empty {
+  text-align: center;
+  padding: 30px 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.checkout-item {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 120px;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.checkout-item:last-child {
+  border-bottom: none;
+}
+
+.checkout-item-image {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  background: #ececec;
+  overflow: hidden;
+}
+
+.checkout-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.checkout-item-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.checkout-item-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.checkout-item-unit {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.checkout-item-total {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.checkout-item-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+}
+
+.quantity-controls {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.quantity-button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--card-bg);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-button:hover {
+  background: var(--accent-soft);
+}
+
+.quantity-value {
+  min-width: 28px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.checkout-summary {
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 18px 18px 20px 18px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.checkout-summary h3 {
+  margin: 0 0 12px 0;
+  font-size: 17px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.summary-total {
+  margin-top: 10px;
+  font-weight: 600;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 8px;
+}
+
+.checkout-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Footer */
+
+.site-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 14px 20px 18px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Utility */
+
+.badge-out {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f5d5d3;
+  color: var(--error);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .checkout-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .checkout-summary {
+    position: sticky;
+    bottom: 0;
+    margin-top: 14px;
+  }
+
+  .about-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Mobile/tablet sizing tweaks (layout only) */
+@media (max-width: 899px) {
+  .main-nav {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .cart-button {
+    flex-shrink: 0;
+  }
+
+  .main-content {
+    margin: 16px auto 28px auto;
+    padding: 0 14px;
+  }
+
+  .hero {
+    gap: 16px;
+  }
+
+  .hero-about {
+    padding: 16px 16px 18px;
+  }
+
+  /* Collage fica fluida também no mobile */
+  .hero-images {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    padding: 10px;
+  }
+
+  .product-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-product-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .product-content,
+  .admin-product-body {
+    padding: 10px 12px 12px;
+  }
+
+  .product-name,
+  .admin-product-title {
+    font-size: 14px;
+  }
+
+  .product-price,
+  .admin-product-price,
+  .product-price-current {
+    font-size: 14px;
+  }
+
+  .checkout-item {
+    grid-template-columns: 80px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+  }
+
+  .checkout-item-controls {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .brand-name {
+    font-size: 26px;
+    letter-spacing: 0.24em;
+  }
+
+  .brand-name-pajamas {
+    font-size: 26px;
+  }
+
+  .product-carousel-arrow {
+    bottom: 8px;
+    padding: 3px 7px;
+    font-size: 12px;
+  }
+
+  .product-carousel-indicator {
+    bottom: 8px;
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .product-carousel-controls {
+    bottom: 6px;
+    padding: 3px 6px;
+    gap: 4px;
+  }
+
+  .product-carousel-controls .product-carousel-arrow {
+    font-size: 11px;
+    padding: 2px 5px;
+  }
+
+  .product-carousel-controls .product-carousel-indicator {
+    font-size: 10px;
+    padding: 0 4px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
