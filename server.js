@@ -1134,6 +1134,20 @@ app.get("/sitemap.xml", (_req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
+/* Google site verification                                            */
+/* ------------------------------------------------------------------ */
+
+app.get("/google0292583cfdf40074.html", (_req, res) => {
+  const filePath = path.join(CLIENT_DIR, "google0292583cfdf40074.html");
+  if (fs.existsSync(filePath)) {
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Cache-Control", "no-store");
+    return res.sendFile(filePath);
+  }
+  res.status(404).send("Not Found");
+});
+
+/* ------------------------------------------------------------------ */
 /* Client routes and fallback                                          */
 /* ------------------------------------------------------------------ */
 
