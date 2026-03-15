@@ -163,7 +163,7 @@ app.get("/apple-touch-icon.png", (req, res) => serveLogo(req, res, "apple-touch-
 // Dynamic web manifest – icons point to the dynamic routes above
 app.get("/site.webmanifest", (_req, res) => {
   const manifest = {
-    name: "DARAH Pajamas",
+    name: "DARAH Pijamas",
     short_name: "DARAH",
     icons: [
       { src: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
