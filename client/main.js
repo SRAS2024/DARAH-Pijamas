@@ -1158,28 +1158,11 @@ function initStorefrontApp() {
     });
   }
 
-  // Load and apply custom logo as favicon
-  async function loadAndApplyLogo() {
-    try {
-      const res = await fetch("/api/logo");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.logoUrl) {
-          const links = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
-          links.forEach(function (link) { link.href = data.logoUrl; });
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
-
   // Initial view and load
   switchView("home");
   loadHomepage();
   renderCheckout();
   loadProducts();
-  loadAndApplyLogo();
 }
 
 /* =========================================================
@@ -2465,22 +2448,11 @@ function initAdminApp() {
         var data = await res.json();
         if (data.logoUrl) {
           updateLogoPreview(data.logoUrl);
-          // Update all favicons dynamically
-          applyLogoAsFavicon(data.logoUrl);
         }
       }
     } catch (e) {
       // ignore
     }
-  }
-
-  function applyLogoAsFavicon(dataUrl) {
-    if (!dataUrl) return;
-    // Update existing favicon links
-    var links = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
-    links.forEach(function (link) {
-      link.href = dataUrl;
-    });
   }
 
   if (logoUploadBtn && logoFileInput) {
@@ -2506,7 +2478,6 @@ function initAdminApp() {
 
         if (!res.ok) throw new Error("Erro ao salvar logo.");
 
-        applyLogoAsFavicon(dataUrl);
         setStatus(logoStatus, "Logo salvo com sucesso!", "ok");
       } catch (err) {
         setStatus(logoStatus, err.message || "Erro ao processar logo.", "error");
