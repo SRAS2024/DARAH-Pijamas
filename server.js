@@ -1033,16 +1033,53 @@ app.post("/api/checkout-link", (req, res) => {
 /* ------------------------------------------------------------------ */
 
 app.get("/robots.txt", (_req, res) => {
+  const base = process.env.SITE_URL || "https://darahpijamas.com";
+
   const txt = [
     "User-agent: *",
     "Disallow: /admin",
     "Disallow: /admin.html",
-    "Disallow: /api/"
+    "Disallow: /api/",
+    "",
+    `Sitemap: ${base}/sitemap.xml`
   ].join("\n");
 
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Cache-Control", "public, max-age=3600");
   res.send(txt);
+});
+
+app.get("/sitemap.xml", (_req, res) => {
+  const base = process.env.SITE_URL || "https://darahpijamas.com";
+
+  const publicPaths = [
+    { loc: "/", priority: "1.0", changefreq: "daily" },
+    { loc: "/#sobre-nos", priority: "0.8", changefreq: "monthly" },
+    { loc: "/#babydoll", priority: "0.7", changefreq: "weekly" },
+    { loc: "/#camisolas", priority: "0.7", changefreq: "weekly" },
+    { loc: "/#longos", priority: "0.7", changefreq: "weekly" },
+    { loc: "/#infantil", priority: "0.7", changefreq: "weekly" }
+  ];
+
+  const today = new Date().toISOString().split("T")[0];
+
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+  for (const p of publicPaths) {
+    xml += "  <url>\n";
+    xml += `    <loc>${base}${p.loc}</loc>\n`;
+    xml += `    <lastmod>${today}</lastmod>\n`;
+    xml += `    <changefreq>${p.changefreq}</changefreq>\n`;
+    xml += `    <priority>${p.priority}</priority>\n`;
+    xml += "  </url>\n";
+  }
+
+  xml += "</urlset>\n";
+
+  res.setHeader("Content-Type", "application/xml");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  res.send(xml);
 });
 
 /* ------------------------------------------------------------------ */
