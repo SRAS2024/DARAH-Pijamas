@@ -71,7 +71,8 @@ async function initDatabase(db) {
   await pg.query(`
     ALTER TABLE homepage
       ADD COLUMN IF NOT EXISTS about_long_text TEXT NOT NULL DEFAULT '',
-      ADD COLUMN IF NOT EXISTS about_images JSONB NOT NULL DEFAULT '[]'::jsonb;
+      ADD COLUMN IF NOT EXISTS about_images JSONB NOT NULL DEFAULT '[]'::jsonb,
+      ADD COLUMN IF NOT EXISTS logo_url TEXT NOT NULL DEFAULT '';
   `);
 
   await pg.query(`
@@ -102,7 +103,7 @@ async function initDatabase(db) {
 
   // 2) Hydrate homepage from DB, or seed from current in memory default
   const homeResult = await pg.query(
-    "SELECT about_text, about_long_text, hero_images, notices, theme, about_images FROM homepage WHERE id = 1"
+    "SELECT about_text, about_long_text, hero_images, notices, theme, about_images, logo_url FROM homepage WHERE id = 1"
   );
 
   if (homeResult.rows.length === 0) {
@@ -118,8 +119,8 @@ async function initDatabase(db) {
 
     await pg.query(
       `
-      INSERT INTO homepage (id, about_text, about_long_text, hero_images, notices, theme, about_images)
-      VALUES (1, $1, $2, $3::jsonb, $4::jsonb, $5, $6::jsonb)
+      INSERT INTO homepage (id, about_text, about_long_text, hero_images, notices, theme, about_images, logo_url)
+      VALUES (1, $1, $2, $3::jsonb, $4::jsonb, $5, $6::jsonb, $7)
       ON CONFLICT (id) DO NOTHING;
     `,
       [
@@ -128,7 +129,8 @@ async function initDatabase(db) {
         JSON.stringify(Array.isArray(home.heroImages) ? home.heroImages : []),
         JSON.stringify(Array.isArray(home.notices) ? home.notices : []),
         typeof home.theme === "string" ? home.theme : "default",
-        JSON.stringify(Array.isArray(home.aboutImages) ? home.aboutImages : [])
+        JSON.stringify(Array.isArray(home.aboutImages) ? home.aboutImages : []),
+        String(home.logoUrl || "")
       ]
     );
 
@@ -141,7 +143,8 @@ async function initDatabase(db) {
       heroImages: Array.isArray(row.hero_images) ? row.hero_images : [],
       notices: Array.isArray(row.notices) ? row.notices : [],
       theme: row.theme || "default",
-      aboutImages: Array.isArray(row.about_images) ? row.about_images : []
+      aboutImages: Array.isArray(row.about_images) ? row.about_images : [],
+      logoUrl: row.logo_url || ""
     };
   }
 
@@ -204,18 +207,20 @@ async function persistHomepage(homepage) {
     typeof homepage.theme === "string" && homepage.theme.length
       ? homepage.theme
       : "default";
+  const logoUrl = String(homepage.logoUrl || "");
 
   await pg.query(
     `
-    INSERT INTO homepage (id, about_text, about_long_text, hero_images, notices, theme, about_images)
-    VALUES (1, $1, $2, $3::jsonb, $4::jsonb, $5, $6::jsonb)
+    INSERT INTO homepage (id, about_text, about_long_text, hero_images, notices, theme, about_images, logo_url)
+    VALUES (1, $1, $2, $3::jsonb, $4::jsonb, $5, $6::jsonb, $7)
     ON CONFLICT (id) DO UPDATE SET
       about_text      = EXCLUDED.about_text,
       about_long_text = EXCLUDED.about_long_text,
       hero_images     = EXCLUDED.hero_images,
       notices         = EXCLUDED.notices,
       theme           = EXCLUDED.theme,
-      about_images    = EXCLUDED.about_images;
+      about_images    = EXCLUDED.about_images,
+      logo_url        = EXCLUDED.logo_url;
   `,
     [
       aboutText,
@@ -223,7 +228,8 @@ async function persistHomepage(homepage) {
       JSON.stringify(heroImages),
       JSON.stringify(notices),
       theme,
-      JSON.stringify(aboutImages)
+      JSON.stringify(aboutImages),
+      logoUrl
     ]
   );
 }

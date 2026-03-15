@@ -160,12 +160,13 @@ app.use(
 const db = {
   homepage: {
     aboutText:
-      "DARAH é uma joalheria dedicada a peças elegantes e atemporais, criadas para acompanhar você em todos os momentos especiais.",
+      "DARAH Pajamas é dedicada a pijamas elegantes e confortáveis, criados para acompanhar você em todos os momentos especiais.",
     aboutLongText: "",
     heroImages: [],
     notices: [],
     theme: "default",
-    aboutImages: []
+    aboutImages: [],
+    logoUrl: ""
   },
   products: []
 };
@@ -259,12 +260,10 @@ function normalizeImageArray(arr, limit) {
 /* ------------------------------------------------------------------ */
 
 const ALLOWED_CATEGORIES = [
-  "specials",
-  "sets",
-  "rings",
-  "necklaces",
-  "bracelets",
-  "earrings"
+  "babydoll",
+  "camisolas",
+  "longos",
+  "infantil"
 ];
 
 function normalizeCategory(raw) {
@@ -272,41 +271,24 @@ function normalizeCategory(raw) {
 
   if (!s) return "";
 
-  // Common older or alternate forms
   const map = {
-    special: "specials",
-    specials: "specials",
-    oferta: "specials",
-    ofertas: "specials",
+    babydoll: "babydoll",
+    camisola: "camisolas",
+    camisolas: "camisolas",
+    longo: "longos",
+    longos: "longos",
+    infantil: "infantil",
 
-    set: "sets",
-    sets: "sets",
-    conjunto: "sets",
-    conjuntos: "sets",
-
-    ring: "rings",
-    rings: "rings",
-    anel: "rings",
-    aneis: "rings",
-    anéis: "rings",
-
-    necklace: "necklaces",
-    necklaces: "necklaces",
-    colar: "necklaces",
-    colares: "necklaces",
-
-    bracelet: "bracelets",
-    bracelets: "bracelets",
-    pulseira: "bracelets",
-    pulseiras: "bracelets",
-
-    earring: "earrings",
-    earrings: "earrings",
-    brinco: "earrings",
-    brincos: "earrings"
+    // Legacy jewelry categories map to empty (removed)
+    specials: "",
+    sets: "",
+    rings: "",
+    necklaces: "",
+    bracelets: "",
+    earrings: ""
   };
 
-  const mapped = map[s] || s;
+  const mapped = map[s] !== undefined ? map[s] : s;
   if (ALLOWED_CATEGORIES.includes(mapped)) return mapped;
 
   return "";
@@ -318,12 +300,10 @@ function groupPublicProducts() {
   }
 
   const out = {
-    specials: [],
-    sets: [],
-    rings: [],
-    necklaces: [],
-    bracelets: [],
-    earrings: []
+    babydoll: [],
+    camisolas: [],
+    longos: [],
+    infantil: []
   };
 
   db.products.forEach((p) => {
@@ -925,6 +905,31 @@ app.post("/api/admin/compress-images", requireAdmin, async (req, res) => {
   res.json({ ok: true, updated });
 });
 
+// Logo (stored in homepage object for simplicity)
+app.get("/api/logo", (_req, res) => {
+  res.json({ logoUrl: db.homepage.logoUrl || "" });
+});
+
+app.put("/api/admin/logo", requireAdmin, async (req, res) => {
+  const { logoUrl } = req.body || {};
+  if (typeof logoUrl !== "string") {
+    return res.status(400).json({ error: "URL do logo inválida." });
+  }
+
+  db.homepage.logoUrl = logoUrl;
+  homepageVersion += 1;
+  cachedIndexHtml = null;
+  cachedIndexVersionKey = "";
+
+  try {
+    await persistHomepage(db.homepage);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[logo] Error persisting logo:", err);
+    res.status(500).json({ error: "Erro ao salvar logo." });
+  }
+});
+
 // Cart
 app.get("/api/cart", (req, res) =>
   res.json(summarizeCart(ensureSessionCart(req)))
@@ -1024,62 +1029,20 @@ app.post("/api/checkout-link", (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
-/* Sitemap (excludes admin)                                            */
+/* Robots (excludes admin)                                             */
 /* ------------------------------------------------------------------ */
 
-app.get("/robots.txt", (req, res) => {
-  const protocol = req.protocol;
-  const host = req.get("host");
-  const base = process.env.SITE_URL || `${protocol}://${host}`;
-
+app.get("/robots.txt", (_req, res) => {
   const txt = [
     "User-agent: *",
     "Disallow: /admin",
     "Disallow: /admin.html",
-    "Disallow: /api/",
-    "",
-    `Sitemap: ${base}/sitemap.xml`
+    "Disallow: /api/"
   ].join("\n");
 
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Cache-Control", "public, max-age=3600");
   res.send(txt);
-});
-
-app.get("/sitemap.xml", (req, res) => {
-  const protocol = req.protocol;
-  const host = req.get("host");
-  const base = process.env.SITE_URL || `${protocol}://${host}`;
-
-  const publicPaths = [
-    { loc: "/", priority: "1.0" },
-    { loc: "/#sobre-nos", priority: "0.8" },
-    { loc: "/#ofertas-especiais", priority: "0.7" },
-    { loc: "/#conjuntos", priority: "0.7" },
-    { loc: "/#aneis", priority: "0.7" },
-    { loc: "/#colares", priority: "0.7" },
-    { loc: "/#pulseiras", priority: "0.7" },
-    { loc: "/#brincos", priority: "0.7" }
-  ];
-
-  const today = new Date().toISOString().split("T")[0];
-
-  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-
-  for (const p of publicPaths) {
-    xml += "  <url>\n";
-    xml += `    <loc>${base}${p.loc}</loc>\n`;
-    xml += `    <lastmod>${today}</lastmod>\n`;
-    xml += `    <priority>${p.priority}</priority>\n`;
-    xml += "  </url>\n";
-  }
-
-  xml += "</urlset>\n";
-
-  res.setHeader("Content-Type", "application/xml");
-  res.setHeader("Cache-Control", "public, max-age=3600");
-  res.send(xml);
 });
 
 /* ------------------------------------------------------------------ */

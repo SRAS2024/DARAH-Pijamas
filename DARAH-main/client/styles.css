@@ -1,75 +1,27 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Great+Vibes&display=swap");
 
 :root {
-  /* Tema padrão sálvia (sage) */
-  --banner-bg: #a9b9a4;
-  --banner-text: #222222;
-  --page-bg: #f3f5f1;
+  --banner-bg: #FDE8E9;
+  --banner-text: #C5898E;
+  --page-bg: #fff8f8;
   --card-bg: #ffffff;
 
-  --accent: #4e6b5a;
-  --accent-soft: #d4e0d5;
-  --border-soft: #c2d0c2;
+  --accent: #C5898E;
+  --accent-soft: #fde8e9;
+  --border-soft: #f0c9cb;
 
-  --text-main: #243127;
-  --text-muted: #637064;
+  --text-main: #4a2c2e;
+  --text-muted: #8e6b6e;
 
   --error: #b3261e;
   --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.06);
 
   /* Admin welcome loader accent */
-  --accent-blue: #8ec5ff;
-
-  /* Dourado para o logotipo DARAH no Natal e Páscoa */
-  --brand-gold: #ffd700;
+  --accent-blue: #f0c9cb;
 
   /* Leve base para placeholders visuais */
-  --skeleton-base: #dde3d9;
-  --skeleton-soft: #f3f6f1;
-}
-
-/* Tema de Natal vermelho e dourado */
-html[data-theme-variant="natal"] {
-  --banner-bg: #8b0000;
-  --banner-text: #fdf5e6;
-  --page-bg: #fff7f7;
-  --card-bg: #ffffff;
-
-  --accent: #b22222;
-  --accent-soft: #f2d6a2;
-  --border-soft: #e1c58c;
-
-  --text-main: #3b290c;
-  --text-muted: #7a5f2b;
-
-  --accent-blue: #ffd27f;
-}
-
-/* DARAH em dourado 24k no tema de Natal */
-html[data-theme-variant="natal"] .brand-name {
-  color: var(--brand-gold);
-}
-
-/* Tema de Páscoa azul e dourado */
-html[data-theme-variant="pascoa"] {
-  --banner-bg: #0d47a1;
-  --banner-text: #e3f2fd;
-  --page-bg: #eaf3ff;
-  --card-bg: #ffffff;
-
-  --accent: #1565c0;
-  --accent-soft: #bbdefb;
-  --border-soft: #90caf9;
-
-  --text-main: #123055;
-  --text-muted: #4b6a93;
-
-  --accent-blue: #81d4fa;
-}
-
-/* DARAH em dourado 24k no tema de Páscoa */
-html[data-theme-variant="pascoa"] .brand-name {
-  color: var(--brand-gold);
+  --skeleton-base: #f0d5d7;
+  --skeleton-soft: #fdf0f1;
 }
 
 *,
@@ -147,7 +99,16 @@ body.admin-page.is-admin-login .main-nav {
   font-size: 34px;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: #000000; /* DARAH em preto no tema padrão */
+  color: #C5898E;
+}
+
+.brand-name-pajamas {
+  font-family: "Great Vibes", cursive;
+  font-size: 34px;
+  color: #C5898E;
+  margin-left: 6px;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }
 
 /* Navigation */
@@ -1258,6 +1219,10 @@ body.is-large-device .nav-dropdown {
   .brand-name {
     font-size: 26px;
     letter-spacing: 0.24em;
+  }
+
+  .brand-name-pajamas {
+    font-size: 26px;
   }
 
   .product-carousel-arrow {

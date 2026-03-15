@@ -1,7 +1,7 @@
 {
-  "name": "darah-jewelry-store",
+  "name": "darah-pajamas-store",
   "version": "1.0.0",
-  "description": "DARAH jewelry storefront with WhatsApp checkout and admin panel",
+  "description": "DARAH Pajamas storefront with WhatsApp checkout and admin panel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

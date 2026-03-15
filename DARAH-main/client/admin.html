@@ -4,19 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>DARAH · Admin</title>
+    <title>DARAH Pajamas · Admin</title>
 
     <!-- Favicon and site icons -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#a9b9a4" />
+    <meta name="theme-color" content="#FDE8E9" />
 
     <!-- Cinzel font for the whole site -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Great+Vibes&display=swap"
       rel="stylesheet"
     />
 
@@ -145,33 +145,7 @@
         backdrop-filter: blur(6px);
       }
 
-      .admin-theme-toggle {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 999px;
-        border: 1px solid var(--border-soft);
-        background: rgba(255, 255, 255, 0.9);
-        font-size: 11px;
-        cursor: pointer;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-      }
-      .admin-theme-label {
-        font-weight: 500;
-        color: var(--text-muted);
-      }
-      .admin-theme-select {
-        border: none;
-        background: transparent;
-        font-size: 11px;
-        padding: 2px 0;
-        color: var(--text-main);
-        cursor: pointer;
-      }
-      .admin-theme-select:focus {
-        outline: none;
-      }
+      /* Theme toggle removed */
 
       .admin-user-box {
         display: inline-flex;
@@ -604,16 +578,7 @@
     <!-- Cabeçalho igual à vitrine, com seletor de tema -->
     <header class="site-header">
       <div class="brand-bar">
-        <div class="brand-bar-inner">
-          <div class="brand-mark">
-            <div class="brand-mark-ring"></div>
-            <div class="brand-mark-gem"></div>
-          </div>
-          <div class="brand-text">
-            <span class="brand-name">DARAH</span>
-            <span class="brand-subtitle">joias atemporais</span>
-          </div>
-        </div>
+        <span class="brand-name">DARAH</span><span class="brand-name-pajamas">Pajamas</span>
       </div>
       <nav class="main-nav">
         <!-- Botão de menu mobile (três linhas) -->
@@ -638,35 +603,21 @@
           <button class="nav-link" data-view="about">
             Sobre nós
           </button>
-          <button class="nav-link" data-view="specials">
-            Ofertas especiais
+          <button class="nav-link" data-view="babydoll">
+            Babydoll
           </button>
-          <button class="nav-link" data-view="sets">
-            Conjuntos
+          <button class="nav-link" data-view="camisolas">
+            Camisolas
           </button>
-          <button class="nav-link" data-view="rings">
-            Anéis
+          <button class="nav-link" data-view="longos">
+            Longos
           </button>
-          <button class="nav-link" data-view="necklaces">
-            Colares
-          </button>
-          <button class="nav-link" data-view="bracelets">
-            Pulseiras
-          </button>
-          <button class="nav-link" data-view="earrings">
-            Brincos
+          <button class="nav-link" data-view="infantil">
+            Infantil
           </button>
         </div>
 
         <div class="admin-header-actions">
-          <div class="admin-theme-toggle">
-            <span class="admin-theme-label">Tema</span>
-            <select id="adminThemeSelect" class="admin-theme-select">
-              <option value="default">Padrão</option>
-              <option value="natal">Natal</option>
-              <option value="pascoa">Páscoa</option>
-            </select>
-          </div>
           <span class="admin-badge-top">Painel administrativo privado</span>
           <div class="admin-user-box">
             <span id="adminUserNameLabel" class="admin-user-label"></span>
@@ -689,9 +640,9 @@
       <!-- Login -->
       <section id="adminLoginSection" class="admin-login">
         <div class="admin-login-card">
-          <h1 class="section-title" style="margin-top:0">Acesso administrativo</h1>
+          <h1 class="section-title" style="margin-top:0">Administração DARAH</h1>
           <p class="admin-login-subtitle">
-            Digite seu usuário e senha para entrar no painel da DARAH.
+            Digite seu usuário e senha para entrar no painel da DARAH Pajamas.
           </p>
 
           <div class="admin-field">
@@ -752,7 +703,7 @@
           <div class="hero">
             <div class="hero-images" id="adminHeroGallery"></div>
             <div class="hero-about">
-              <h2 class="hero-title">Joias DARAH</h2>
+              <h2 class="hero-title">DARAH Pajamas</h2>
 
               <div class="admin-field" style="margin-top:4px">
                 <label for="adminAboutText" class="admin-label"
@@ -761,7 +712,7 @@
                 <textarea
                   id="adminAboutText"
                   class="admin-textarea"
-                  placeholder="História, valores e identidade da DARAH"
+                  placeholder="História, valores e identidade da DARAH Pajamas"
                 ></textarea>
               </div>
               <p class="hero-admin-note">
@@ -816,10 +767,29 @@
             </div>
           </div>
 
+          <!-- Upload Website Logo -->
+          <div class="home-highlight" style="margin-top:24px">
+            <h2>Logo do site</h2>
+            <p class="home-highlight-text" style="margin-bottom:10px">
+              Envie uma imagem para usar como favicon e logo do site em todos os navegadores e dispositivos.
+            </p>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div id="adminLogoPreview" class="admin-image-preview" style="width:48px;height:48px;">
+                <div id="adminLogoPlaceholder" class="admin-image-placeholder">+</div>
+                <img id="adminLogoPreviewImg" alt="Logo preview" style="display:none" />
+              </div>
+              <input id="adminLogoFile" type="file" accept="image/*" style="display:none" capture="environment" />
+              <button type="button" id="adminLogoUploadBtn" class="admin-button-secondary" style="background:#e8f4fd;border-color:#b3d7f0;color:#1a73e8;">
+                Upload Website Logo
+              </button>
+            </div>
+            <p id="adminLogoStatus" class="admin-status"></p>
+          </div>
+
           <div class="home-highlight" style="margin-top:24px">
             <h2>Seleção em destaque</h2>
             <p class="home-highlight-text">
-              Explore nossas coleções de anéis, colares, pulseiras e brincos.
+              Explore nossas coleções de babydoll, camisolas, longos e infantil.
             </p>
           </div>
         </section>
@@ -836,7 +806,7 @@
                 <textarea
                   id="adminAboutLongText"
                   class="admin-textarea"
-                  placeholder="Conte a história da DARAH, missão, valores e o que desejar."
+                  placeholder="Conte a história da DARAH Pajamas, missão, valores e o que desejar."
                 ></textarea>
               </div>
               <p class="hero-admin-note">
@@ -902,37 +872,28 @@
           </div>
         </section>
 
-        <!-- VISÃO OFERTAS ESPECIAIS -->
-        <section id="view-specials" class="view">
-          <h2 class="section-title">Ofertas especiais</h2>
-          <div id="grid-specials" class="admin-product-grid"></div>
+        <!-- VISÃO BABYDOLL -->
+        <section id="view-babydoll" class="view">
+          <h2 class="section-title">Babydoll</h2>
+          <div id="grid-babydoll" class="admin-product-grid"></div>
         </section>
 
-        <!-- VISÃO CONJUNTOS -->
-        <section id="view-sets" class="view">
-          <h2 class="section-title">Conjuntos</h2>
-          <div id="grid-sets" class="admin-product-grid"></div>
+        <!-- VISÃO CAMISOLAS -->
+        <section id="view-camisolas" class="view">
+          <h2 class="section-title">Camisolas</h2>
+          <div id="grid-camisolas" class="admin-product-grid"></div>
         </section>
 
-        <!-- VISÕES DE CATEGORIA -->
-        <section id="view-rings" class="view">
-          <h2 class="section-title">Anéis</h2>
-          <div id="grid-rings" class="admin-product-grid"></div>
+        <!-- VISÃO LONGOS -->
+        <section id="view-longos" class="view">
+          <h2 class="section-title">Longos</h2>
+          <div id="grid-longos" class="admin-product-grid"></div>
         </section>
 
-        <section id="view-necklaces" class="view">
-          <h2 class="section-title">Colares</h2>
-          <div id="grid-necklaces" class="admin-product-grid"></div>
-        </section>
-
-        <section id="view-bracelets" class="view">
-          <h2 class="section-title">Pulseiras</h2>
-          <div id="grid-bracelets" class="admin-product-grid"></div>
-        </section>
-
-        <section id="view-earrings" class="view">
-          <h2 class="section-title">Brincos</h2>
-          <div id="grid-earrings" class="admin-product-grid"></div>
+        <!-- VISÃO INFANTIL -->
+        <section id="view-infantil" class="view">
+          <h2 class="section-title">Infantil</h2>
+          <div id="grid-infantil" class="admin-product-grid"></div>
         </section>
 
         <!-- Modal de produto -->
@@ -956,12 +917,10 @@
               <div class="admin-field">
                 <label for="productCategory" class="admin-label">Categoria</label>
                 <select id="productCategory" class="admin-select" required>
-                  <option value="specials">Ofertas especiais</option>
-                  <option value="sets">Conjuntos</option>
-                  <option value="rings">Anéis</option>
-                  <option value="necklaces">Colares</option>
-                  <option value="bracelets">Pulseiras</option>
-                  <option value="earrings">Brincos</option>
+                  <option value="babydoll">Babydoll</option>
+                  <option value="camisolas">Camisolas</option>
+                  <option value="longos">Longos</option>
+                  <option value="infantil">Infantil</option>
                 </select>
               </div>
 
@@ -971,11 +930,10 @@
               </div>
 
               <div class="admin-field">
-                <label for="productDescription" class="admin-label">Descrição</label>
+                <label for="productDescription" class="admin-label">Descrição (opcional)</label>
                 <textarea
                   id="productDescription"
                   class="admin-textarea"
-                  required
                 ></textarea>
               </div>
 
@@ -1057,8 +1015,7 @@
                   />
                 </div>
                 <p class="admin-status" style="margin-top:4px">
-                  Se preenchido, aparecerá como valor riscado na aba "Ofertas
-                  especiais".
+                  Se preenchido, aparecerá como valor riscado na página do produto.
                 </p>
               </div>
 
@@ -1166,7 +1123,7 @@
     </main>
 
     <footer class="site-footer">
-      <p>© 2025 DARAH. Todos os direitos reservados.</p>
+      <p>© 2025 DARAH Pajamas. Todos os direitos reservados.</p>
     </footer>
 
     <!-- Use main.js which auto-detects admin mode -->
