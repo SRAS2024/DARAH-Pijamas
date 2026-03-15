@@ -127,6 +127,57 @@ app.use("/api", (_req, res, next) => {
   next();
 });
 
+/* ------------------------------------------------------------------ */
+/* Dynamic favicon / icons – served from admin-uploaded logo in DB     */
+/* These routes MUST come before express.static so they override the   */
+/* static placeholder files.                                           */
+/* ------------------------------------------------------------------ */
+
+function parseDataUrl(dataUrl) {
+  const m = dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+  if (!m) return null;
+  return { mime: m[1], buffer: Buffer.from(m[2], "base64") };
+}
+
+function serveLogo(req, res, fallbackFile) {
+  const logoUrl = db.homepage.logoUrl;
+  if (logoUrl) {
+    const parsed = parseDataUrl(logoUrl);
+    if (parsed) {
+      res.setHeader("Content-Type", parsed.mime);
+      res.setHeader("Cache-Control", "public, max-age=300");
+      return res.send(parsed.buffer);
+    }
+  }
+  // Fall through to static file if no logo uploaded yet
+  const fallback = path.join(CLIENT_DIR, fallbackFile);
+  if (fs.existsSync(fallback)) return res.sendFile(fallback);
+  res.status(404).end();
+}
+
+app.get("/favicon.ico", (req, res) => serveLogo(req, res, "favicon-32x32.png"));
+app.get("/favicon.svg", (req, res) => serveLogo(req, res, "favicon.svg"));
+app.get("/favicon-32x32.png", (req, res) => serveLogo(req, res, "favicon-32x32.png"));
+app.get("/apple-touch-icon.png", (req, res) => serveLogo(req, res, "apple-touch-icon.png"));
+
+// Dynamic web manifest – icons point to the dynamic routes above
+app.get("/site.webmanifest", (_req, res) => {
+  const manifest = {
+    name: "DARAH Pajamas",
+    short_name: "DARAH",
+    icons: [
+      { src: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { src: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }
+    ],
+    theme_color: "#FDE8E9",
+    background_color: "#fff8f8",
+    display: "standalone"
+  };
+  res.setHeader("Content-Type", "application/manifest+json");
+  res.setHeader("Cache-Control", "public, max-age=300");
+  res.json(manifest);
+});
+
 // Static client assets with strong caching for CSS, JS, images.
 // BUT: main.js and styles.css must not be cached long term because they are not fingerprinted.
 app.use(
