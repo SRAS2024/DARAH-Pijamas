@@ -558,19 +558,17 @@
           padding: 0 12px 24px;
         }
 
-        /* On small screens, put all controls into the hamburger dropdown */
         .admin-page .main-nav {
           padding: 0 12px;
         }
-        .admin-page .main-nav .nav-left {
-          display: none;
-        }
-        .admin-page .main-nav .admin-header-actions {
-          display: none;
-        }
-        .admin-badge-top {
-          display: none;
-        }
+      }
+
+      /* On small devices, hide header actions and show hamburger with dropdown */
+      body.is-small-device.admin-page .admin-header-actions {
+        display: none;
+      }
+      body.is-small-device.admin-page .admin-badge-top {
+        display: none;
       }
     </style>
   </head>
@@ -597,10 +595,10 @@
         </button>
 
         <div class="nav-left">
-          <button class="nav-link active" data-view="home">
+          <button class="nav-link active" data-view="home" data-mobile-priority="true">
             Início
           </button>
-          <button class="nav-link" data-view="about">
+          <button class="nav-link" data-view="about" data-mobile-priority="true">
             Sobre nós
           </button>
           <button class="nav-link" data-view="babydoll">
