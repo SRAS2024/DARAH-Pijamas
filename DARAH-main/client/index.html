@@ -4,20 +4,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>DARAH · Joias</title>
+    <title>DARAH Pajamas</title>
 
     <!-- Favicon and site icons -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#a9b9a4" />
+    <meta name="theme-color" content="#FDE8E9" />
 
     <!-- Performance hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Great+Vibes&display=swap"
       rel="stylesheet"
     />
 
@@ -31,7 +31,7 @@
     <!-- Cabeçalho igual ao do admin -->
     <header class="site-header">
       <div class="brand-bar">
-        <span class="brand-name">DARAH</span>
+        <span class="brand-name">DARAH</span><span class="brand-name-pajamas">Pajamas</span>
       </div>
       <nav class="main-nav">
         <!-- Botão de menu mobile (três linhas) -->
@@ -68,39 +68,27 @@
 
           <button
             class="nav-link"
-            data-view="specials"
+            data-view="babydoll"
           >
-            Ofertas especiais
+            Babydoll
           </button>
           <button
             class="nav-link"
-            data-view="sets"
+            data-view="camisolas"
           >
-            Conjuntos
+            Camisolas
           </button>
           <button
             class="nav-link"
-            data-view="rings"
+            data-view="longos"
           >
-            Anéis
+            Longos
           </button>
           <button
             class="nav-link"
-            data-view="necklaces"
+            data-view="infantil"
           >
-            Colares
-          </button>
-          <button
-            class="nav-link"
-            data-view="bracelets"
-          >
-            Pulseiras
-          </button>
-          <button
-            class="nav-link"
-            data-view="earrings"
-          >
-            Brincos
+            Infantil
           </button>
         </div>
 
@@ -137,7 +125,7 @@
           </div>
 
           <article class="hero-about">
-            <h2 class="hero-title">Sobre a DARAH</h2>
+            <h2 class="hero-title">Sobre a DARAH Pajamas</h2>
             <p id="aboutText" class="hero-text">
               <!-- Texto preenchido por /api/homepage -->
             </p>
@@ -147,7 +135,7 @@
         <section class="home-highlight">
           <h2>Seleção em destaque</h2>
           <p class="home-highlight-text">
-            Explore nossas coleções de anéis, colares, pulseiras e brincos.
+            Explore nossas coleções de babydoll, camisolas, longos e infantil.
           </p>
         </section>
       </section>
@@ -171,40 +159,28 @@
         </div>
       </section>
 
-      <!-- OFERTAS ESPECIAIS -->
-      <section id="view-specials" class="view">
-        <h2 class="section-title">Ofertas especiais</h2>
-        <div id="specialsList" class="product-grid"></div>
+      <!-- BABYDOLL -->
+      <section id="view-babydoll" class="view">
+        <h2 class="section-title">Babydoll</h2>
+        <div id="babydollList" class="product-grid"></div>
       </section>
 
-      <!-- CONJUNTOS -->
-      <section id="view-sets" class="view">
-        <h2 class="section-title">Conjuntos</h2>
-        <div id="setsList" class="product-grid"></div>
+      <!-- CAMISOLAS -->
+      <section id="view-camisolas" class="view">
+        <h2 class="section-title">Camisolas</h2>
+        <div id="camisolasList" class="product-grid"></div>
       </section>
 
-      <!-- ANÉIS -->
-      <section id="view-rings" class="view">
-        <h2 class="section-title">Anéis</h2>
-        <div id="ringsList" class="product-grid"></div>
+      <!-- LONGOS -->
+      <section id="view-longos" class="view">
+        <h2 class="section-title">Longos</h2>
+        <div id="longosList" class="product-grid"></div>
       </section>
 
-      <!-- COLARES -->
-      <section id="view-necklaces" class="view">
-        <h2 class="section-title">Colares</h2>
-        <div id="necklacesList" class="product-grid"></div>
-      </section>
-
-      <!-- PULSEIRAS -->
-      <section id="view-bracelets" class="view">
-        <h2 class="section-title">Pulseiras</h2>
-        <div id="braceletsList" class="product-grid"></div>
-      </section>
-
-      <!-- BRINCOS -->
-      <section id="view-earrings" class="view">
-        <h2 class="section-title">Brincos</h2>
-        <div id="earringsList" class="product-grid"></div>
+      <!-- INFANTIL -->
+      <section id="view-infantil" class="view">
+        <h2 class="section-title">Infantil</h2>
+        <div id="infantilList" class="product-grid"></div>
       </section>
 
       <!-- CHECKOUT -->
@@ -239,7 +215,7 @@
     </main>
 
     <footer class="site-footer">
-      <p>© <span id="year">2025</span> DARAH. Todos os direitos reservados.</p>
+      <p>© <span id="year">2025</span> DARAH Pajamas. Todos os direitos reservados.</p>
     </footer>
 
     <script src="main.js" defer></script>

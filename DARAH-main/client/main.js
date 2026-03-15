@@ -141,12 +141,10 @@ function initStorefrontApp() {
   const views = {
     home: document.getElementById("view-home"),
     about: document.getElementById("view-about"),
-    specials: document.getElementById("view-specials"),
-    sets: document.getElementById("view-sets"),
-    rings: document.getElementById("view-rings"),
-    necklaces: document.getElementById("view-necklaces"),
-    bracelets: document.getElementById("view-bracelets"),
-    earrings: document.getElementById("view-earrings"),
+    babydoll: document.getElementById("view-babydoll"),
+    camisolas: document.getElementById("view-camisolas"),
+    longos: document.getElementById("view-longos"),
+    infantil: document.getElementById("view-infantil"),
     checkout: document.getElementById("view-checkout")
   };
 
@@ -161,12 +159,10 @@ function initStorefrontApp() {
 
   // Product grids
   const productLists = {
-    specials: document.getElementById("specialsList"),
-    sets: document.getElementById("setsList"),
-    rings: document.getElementById("ringsList"),
-    necklaces: document.getElementById("necklacesList"),
-    bracelets: document.getElementById("braceletsList"),
-    earrings: document.getElementById("earringsList")
+    babydoll: document.getElementById("babydollList"),
+    camisolas: document.getElementById("camisolasList"),
+    longos: document.getElementById("longosList"),
+    infantil: document.getElementById("infantilList")
   };
 
   // Cart
@@ -781,7 +777,7 @@ function initStorefrontApp() {
 
     const desc = document.createElement("div");
     desc.className = "product-description";
-    desc.textContent = product.description || "Peça da coleção DARAH.";
+    desc.textContent = product.description || "";
     content.appendChild(desc);
 
     const meta = document.createElement("div");
@@ -1024,7 +1020,7 @@ function initStorefrontApp() {
           allProducts = products;
         } else if (products && typeof products === "object") {
           const flat = [];
-          ["specials", "sets", "rings", "necklaces", "bracelets", "earrings"].forEach((key) => {
+          ["babydoll", "camisolas", "longos", "infantil"].forEach((key) => {
             if (Array.isArray(products[key])) products[key].forEach((p) => flat.push(p));
           });
           allProducts = flat;
@@ -1057,7 +1053,7 @@ function initStorefrontApp() {
         allProducts = products;
       } else if (products && typeof products === "object") {
         const flat = [];
-        ["specials", "sets", "rings", "necklaces", "bracelets", "earrings"].forEach((key) => {
+        ["babydoll", "camisolas", "longos", "infantil"].forEach((key) => {
           if (Array.isArray(products[key])) products[key].forEach((p) => flat.push(p));
         });
         allProducts = flat;
@@ -1083,7 +1079,7 @@ function initStorefrontApp() {
         allProducts = products;
       } else if (products && typeof products === "object") {
         const flat = [];
-        ["specials", "sets", "rings", "necklaces", "bracelets", "earrings"].forEach((key) => {
+        ["babydoll", "camisolas", "longos", "infantil"].forEach((key) => {
           if (Array.isArray(products[key])) products[key].forEach((p) => flat.push(p));
         });
         allProducts = flat;
@@ -1162,11 +1158,28 @@ function initStorefrontApp() {
     });
   }
 
+  // Load and apply custom logo as favicon
+  async function loadAndApplyLogo() {
+    try {
+      const res = await fetch("/api/logo");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.logoUrl) {
+          const links = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
+          links.forEach(function (link) { link.href = data.logoUrl; });
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
   // Initial view and load
   switchView("home");
   loadHomepage();
   renderCheckout();
   loadProducts();
+  loadAndApplyLogo();
 }
 
 /* =========================================================
@@ -1191,12 +1204,10 @@ function initAdminApp() {
   const views = {
     home: document.getElementById("view-home"),
     about: document.getElementById("view-about"),
-    specials: document.getElementById("view-specials"),
-    sets: document.getElementById("view-sets"),
-    rings: document.getElementById("view-rings"),
-    necklaces: document.getElementById("view-necklaces"),
-    bracelets: document.getElementById("view-bracelets"),
-    earrings: document.getElementById("view-earrings")
+    babydoll: document.getElementById("view-babydoll"),
+    camisolas: document.getElementById("view-camisolas"),
+    longos: document.getElementById("view-longos"),
+    infantil: document.getElementById("view-infantil")
   };
 
   // Auth and panel sections
@@ -1211,7 +1222,7 @@ function initAdminApp() {
 
   const logoutButton = document.getElementById("adminLogoutButton");
   const userNameLabel = document.getElementById("adminUserNameLabel");
-  const themeSelect = document.getElementById("adminThemeSelect");
+  // Theme select removed
 
   // Homepage admin controls
   const aboutTextEl = document.getElementById("adminAboutText");
@@ -1264,12 +1275,10 @@ function initAdminApp() {
   };
 
   const grids = {
-    specials: document.getElementById("grid-specials"),
-    sets: document.getElementById("grid-sets"),
-    rings: document.getElementById("grid-rings"),
-    necklaces: document.getElementById("grid-necklaces"),
-    bracelets: document.getElementById("grid-bracelets"),
-    earrings: document.getElementById("grid-earrings")
+    babydoll: document.getElementById("grid-babydoll"),
+    camisolas: document.getElementById("grid-camisolas"),
+    longos: document.getElementById("grid-longos"),
+    infantil: document.getElementById("grid-infantil")
   };
 
   // State
@@ -1381,27 +1390,9 @@ function initAdminApp() {
     if (!navDropdown || !navLeftContainer) return;
     navDropdown.innerHTML = "";
 
-    // Add admin extras at top of dropdown (theme, user, logout)
+    // Add admin extras at top of dropdown (user, logout)
     var extras = document.createElement("div");
     extras.className = "admin-mobile-extras";
-
-    var themeRow = document.createElement("div");
-    themeRow.className = "admin-mobile-row";
-    var themeLabel = document.createElement("span");
-    themeLabel.className = "admin-mobile-label";
-    themeLabel.textContent = "Tema";
-    var themeSelectClone = document.createElement("select");
-    themeSelectClone.className = "admin-theme-select";
-    themeSelectClone.innerHTML = '<option value="default">Padrão</option><option value="natal">Natal</option><option value="pascoa">Páscoa</option>';
-    themeSelectClone.value = homepageState.theme || "default";
-    themeSelectClone.addEventListener("change", function () {
-      var v = themeSelectClone.value;
-      if (themeSelect) themeSelect.value = v;
-      handleThemeChange(v);
-    });
-    themeRow.appendChild(themeLabel);
-    themeRow.appendChild(themeSelectClone);
-    extras.appendChild(themeRow);
 
     var userRow = document.createElement("div");
     userRow.className = "admin-mobile-row";
@@ -1710,18 +1701,7 @@ function initAdminApp() {
     }
   }
 
-  /* ---- Theme handling ---- */
-
-  function handleThemeChange(value) {
-    homepageState.theme = value || "default";
-    applyThemeVariant(homepageState.theme);
-  }
-
-  if (themeSelect) {
-    themeSelect.addEventListener("change", function () {
-      handleThemeChange(themeSelect.value);
-    });
-  }
+  /* ---- Theme handling (removed - single theme) ---- */
 
   /* ---- Show admin panel after auth ---- */
 
@@ -1872,7 +1852,7 @@ function initAdminApp() {
       renderNotices();
       applyThemeVariant(homepageState.theme);
 
-      if (themeSelect) themeSelect.value = homepageState.theme;
+      // Theme select removed
     } catch (err) {
       console.error("Failed to load homepage data:", err);
     }
@@ -2249,7 +2229,7 @@ function initAdminApp() {
       productModalTitle.textContent = product ? "Editar produto" : "Novo produto";
     }
 
-    if (hiddenForm.category) hiddenForm.category.value = product ? (product.category || "specials") : (defaultCategory || "specials");
+    if (hiddenForm.category) hiddenForm.category.value = product ? (product.category || "babydoll") : (defaultCategory || "babydoll");
     if (hiddenForm.name) hiddenForm.name.value = product ? (product.name || "") : "";
     if (hiddenForm.description) hiddenForm.description.value = product ? (product.description || "") : "";
     if (hiddenForm.price) hiddenForm.price.value = product ? (product.price || "") : "";
@@ -2455,6 +2435,88 @@ function initAdminApp() {
       }
     });
   }
+
+  /* ---- Logo upload ---- */
+
+  var logoUploadBtn = document.getElementById("adminLogoUploadBtn");
+  var logoFileInput = document.getElementById("adminLogoFile");
+  var logoPreviewImg = document.getElementById("adminLogoPreviewImg");
+  var logoPlaceholder = document.getElementById("adminLogoPlaceholder");
+  var logoStatus = document.getElementById("adminLogoStatus");
+
+  function updateLogoPreview(src) {
+    if (logoPreviewImg && logoPlaceholder) {
+      if (src) {
+        logoPreviewImg.src = src;
+        logoPreviewImg.style.display = "";
+        logoPlaceholder.style.display = "none";
+      } else {
+        logoPreviewImg.style.display = "none";
+        logoPlaceholder.style.display = "";
+      }
+    }
+  }
+
+  // Load existing logo on admin init
+  async function loadLogo() {
+    try {
+      var res = await fetch("/api/logo");
+      if (res.ok) {
+        var data = await res.json();
+        if (data.logoUrl) {
+          updateLogoPreview(data.logoUrl);
+          // Update all favicons dynamically
+          applyLogoAsFavicon(data.logoUrl);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function applyLogoAsFavicon(dataUrl) {
+    if (!dataUrl) return;
+    // Update existing favicon links
+    var links = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
+    links.forEach(function (link) {
+      link.href = dataUrl;
+    });
+  }
+
+  if (logoUploadBtn && logoFileInput) {
+    logoUploadBtn.addEventListener("click", function () {
+      logoFileInput.click();
+    });
+
+    logoFileInput.addEventListener("change", async function () {
+      var files = logoFileInput.files;
+      if (!files || !files.length) return;
+
+      setStatus(logoStatus, "Processando logo...", "");
+      try {
+        var dataUrl = await compressImage(files[0], 256, 0.8);
+        updateLogoPreview(dataUrl);
+
+        // Save to server
+        var res = await fetch("/api/admin/logo", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ logoUrl: dataUrl })
+        });
+
+        if (!res.ok) throw new Error("Erro ao salvar logo.");
+
+        applyLogoAsFavicon(dataUrl);
+        setStatus(logoStatus, "Logo salvo com sucesso!", "ok");
+      } catch (err) {
+        setStatus(logoStatus, err.message || "Erro ao processar logo.", "error");
+      }
+      logoFileInput.value = "";
+    });
+  }
+
+  // Load logo on startup
+  loadLogo();
 
   /* ---- Initial view ---- */
   switchView("home");
