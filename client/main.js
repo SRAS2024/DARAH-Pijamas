@@ -698,6 +698,8 @@ function initStorefrontApp() {
     var leftArrow = null;
     var rightArrow = null;
     var indicator = null;
+    var pillLeft = null;
+    var pillRight = null;
 
     if (images.length > 1) {
       leftArrow = document.createElement("button");
@@ -712,9 +714,26 @@ function initStorefrontApp() {
       rightArrow.textContent = "\u203A";
       backdrop.appendChild(rightArrow);
 
+      var controls = document.createElement("div");
+      controls.className = "product-lightbox-controls";
+
+      pillLeft = document.createElement("button");
+      pillLeft.type = "button";
+      pillLeft.className = "product-lightbox-pill-arrow product-lightbox-pill-arrow-left";
+      pillLeft.textContent = "\u2039";
+
       indicator = document.createElement("div");
       indicator.className = "product-lightbox-indicator";
-      backdrop.appendChild(indicator);
+
+      pillRight = document.createElement("button");
+      pillRight.type = "button";
+      pillRight.className = "product-lightbox-pill-arrow product-lightbox-pill-arrow-right";
+      pillRight.textContent = "\u203A";
+
+      controls.appendChild(pillLeft);
+      controls.appendChild(indicator);
+      controls.appendChild(pillRight);
+      backdrop.appendChild(controls);
     }
 
     function update() {
@@ -722,6 +741,8 @@ function initStorefrontApp() {
       img.src = images[idx];
       if (leftArrow) leftArrow.disabled = idx === 0;
       if (rightArrow) rightArrow.disabled = idx === images.length - 1;
+      if (pillLeft) pillLeft.disabled = idx === 0;
+      if (pillRight) pillRight.disabled = idx === images.length - 1;
       if (indicator) indicator.textContent = String(idx + 1) + "/" + String(images.length);
     }
 
@@ -747,6 +768,14 @@ function initStorefrontApp() {
       if (idx > 0) { idx--; update(); }
     });
     if (rightArrow) rightArrow.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (idx < images.length - 1) { idx++; update(); }
+    });
+    if (pillLeft) pillLeft.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (idx > 0) { idx--; update(); }
+    });
+    if (pillRight) pillRight.addEventListener("click", function (e) {
       e.stopPropagation();
       if (idx < images.length - 1) { idx++; update(); }
     });
