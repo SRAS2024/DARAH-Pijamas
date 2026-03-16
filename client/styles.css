@@ -1209,17 +1209,50 @@ body.is-large-device .nav-dropdown {
   right: 16px;
 }
 
-.product-lightbox-indicator {
+.product-lightbox-controls {
   position: absolute;
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 4px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  font-size: 13px;
   z-index: 10;
+}
+
+.product-lightbox-indicator {
+  position: static;
+  padding: 0 6px;
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+}
+
+.product-lightbox-pill-arrow {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.product-lightbox-pill-arrow:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.product-lightbox-pill-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 /* Responsive */
