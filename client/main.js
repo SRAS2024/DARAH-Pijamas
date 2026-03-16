@@ -170,7 +170,6 @@ function initStorefrontApp() {
   const cartCountEl = document.getElementById("cartCount");
   const checkoutItemsEl = document.getElementById("checkoutItems");
   const summarySubtotalEl = document.getElementById("summarySubtotal");
-  const summaryTaxesEl = document.getElementById("summaryTaxes");
   const summaryTotalEl = document.getElementById("summaryTotal");
   const checkoutButton = document.getElementById("checkoutButton");
 
@@ -569,7 +568,7 @@ function initStorefrontApp() {
 
   // Checkout rendering
   function renderCheckout() {
-    if (!checkoutItemsEl || !summarySubtotalEl || !summaryTaxesEl || !summaryTotalEl) return;
+    if (!checkoutItemsEl || !summarySubtotalEl || !summaryTotalEl) return;
 
     checkoutItemsEl.innerHTML = "";
 
@@ -588,7 +587,6 @@ function initStorefrontApp() {
       checkoutItemsEl.appendChild(empty);
 
       summarySubtotalEl.textContent = "R$ 0,00";
-      summaryTaxesEl.textContent = "R$ 0,00";
       summaryTotalEl.textContent = "R$ 0,00";
       if (checkoutButton) checkoutButton.disabled = true;
       return;
@@ -668,11 +666,9 @@ function initStorefrontApp() {
       checkoutItemsEl.appendChild(row);
     });
 
-    const taxes = 0;
-    const total = subtotal + taxes;
+    const total = subtotal;
 
     summarySubtotalEl.textContent = formatBRL(subtotal);
-    summaryTaxesEl.textContent = formatBRL(taxes);
     summaryTotalEl.textContent = formatBRL(total);
 
     if (checkoutButton) checkoutButton.disabled = false;

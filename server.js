@@ -403,7 +403,7 @@ function groupPublicProducts() {
 
 function summarizeCart(cart) {
   if (!cart || !Array.isArray(cart.items)) {
-    return { items: [], subtotal: 0, taxes: 0, total: 0 };
+    return { items: [], subtotal: 0, total: 0 };
   }
 
   const items = cart.items
@@ -433,9 +433,8 @@ function summarizeCart(cart) {
     .filter(Boolean);
 
   const subtotal = items.reduce((s, it) => s + it.lineTotal, 0);
-  const taxes = 0;
-  const total = subtotal + taxes;
-  return { items, subtotal, taxes, total };
+  const total = subtotal;
+  return { items, subtotal, total };
 }
 
 const newId = () => crypto.randomBytes(8).toString("hex");
