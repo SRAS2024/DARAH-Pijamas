@@ -674,6 +674,89 @@ function initStorefrontApp() {
     if (checkoutButton) checkoutButton.disabled = false;
   }
 
+  // Lightbox for product images
+  function openProductLightbox(images, startIndex) {
+    var idx = startIndex || 0;
+
+    var backdrop = document.createElement("div");
+    backdrop.className = "product-lightbox-backdrop";
+
+    var closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "product-lightbox-close";
+    closeBtn.textContent = "\u00D7";
+    backdrop.appendChild(closeBtn);
+
+    var content = document.createElement("div");
+    content.className = "product-lightbox-content";
+
+    var img = document.createElement("img");
+    img.alt = "Foto do produto";
+    content.appendChild(img);
+    backdrop.appendChild(content);
+
+    var leftArrow = null;
+    var rightArrow = null;
+    var indicator = null;
+
+    if (images.length > 1) {
+      leftArrow = document.createElement("button");
+      leftArrow.type = "button";
+      leftArrow.className = "product-lightbox-arrow product-lightbox-arrow-left";
+      leftArrow.textContent = "\u2039";
+      backdrop.appendChild(leftArrow);
+
+      rightArrow = document.createElement("button");
+      rightArrow.type = "button";
+      rightArrow.className = "product-lightbox-arrow product-lightbox-arrow-right";
+      rightArrow.textContent = "\u203A";
+      backdrop.appendChild(rightArrow);
+
+      indicator = document.createElement("div");
+      indicator.className = "product-lightbox-indicator";
+      backdrop.appendChild(indicator);
+    }
+
+    function update() {
+      idx = Math.max(0, Math.min(images.length - 1, idx));
+      img.src = images[idx];
+      if (leftArrow) leftArrow.disabled = idx === 0;
+      if (rightArrow) rightArrow.disabled = idx === images.length - 1;
+      if (indicator) indicator.textContent = String(idx + 1) + "/" + String(images.length);
+    }
+
+    function close() {
+      backdrop.remove();
+      document.removeEventListener("keydown", onKey);
+    }
+
+    function onKey(e) {
+      if (e.key === "Escape") close();
+      if (images.length > 1) {
+        if (e.key === "ArrowLeft" && idx > 0) { idx--; update(); }
+        if (e.key === "ArrowRight" && idx < images.length - 1) { idx++; update(); }
+      }
+    }
+
+    closeBtn.addEventListener("click", close);
+    backdrop.addEventListener("click", function (e) {
+      if (e.target === backdrop) close();
+    });
+    if (leftArrow) leftArrow.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (idx > 0) { idx--; update(); }
+    });
+    if (rightArrow) rightArrow.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (idx < images.length - 1) { idx++; update(); }
+    });
+    content.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    document.addEventListener("keydown", onKey);
+    update();
+    document.body.appendChild(backdrop);
+  }
+
   // Product cards
   function createProductCard(product) {
     const card = document.createElement("article");
@@ -691,6 +774,10 @@ function initStorefrontApp() {
         img.src = images[0];
         img.alt = product.name || "Produto";
         img.loading = "lazy";
+        img.style.cursor = "pointer";
+        img.addEventListener("click", function () {
+          openProductLightbox(images, 0);
+        });
         imageWrapper.appendChild(img);
       }
     } else {
@@ -705,6 +792,7 @@ function initStorefrontApp() {
         img.src = src;
         img.alt = product.name || "Produto";
         img.loading = "lazy";
+        img.style.cursor = "pointer";
         track.appendChild(img);
       });
 
@@ -731,6 +819,13 @@ function initStorefrontApp() {
       controls.appendChild(indicator);
       controls.appendChild(rightBtn);
       viewport.appendChild(controls);
+
+      // Click on image to open lightbox at current carousel position
+      viewport.addEventListener("click", function (e) {
+        if (e.target.tagName === "IMG") {
+          openProductLightbox(images, currentIndex);
+        }
+      });
 
       let currentIndex = 0;
       function updateCarousel() {
@@ -2281,6 +2376,20 @@ function initAdminApp() {
       img.src = src;
       img.alt = "Imagem " + (idx + 1);
       thumb.appendChild(img);
+
+      // Remove button
+      var removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "admin-thumb-remove";
+      removeBtn.textContent = "\u00D7";
+      removeBtn.title = "Remover imagem";
+      removeBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        currentProductImages.splice(idx, 1);
+        renderProductImageThumbs();
+        updateProductImagePreview();
+      });
+      thumb.appendChild(removeBtn);
 
       // Click to set as cover
       thumb.addEventListener("click", function () {
