@@ -2024,7 +2024,7 @@ function initAdminApp() {
     }
   }
 
-  /* ---- Insights dashboard ---- */
+  /* ---- Painel de análises ---- */
 
   var insightsDateRange = document.getElementById("insightsDateRange");
   var insightsPageFilter = document.getElementById("insightsPageFilter");
@@ -2032,6 +2032,17 @@ function initAdminApp() {
   var insightsChart = document.getElementById("insightsChart");
   var insightsVisitorData = document.getElementById("insightsVisitorData");
   var productStatsCache = { views: {}, cartAdds: {} };
+
+  // Tradução de nomes de fontes de tráfego
+  var sourceTranslations = {
+    "Instagram": "Instagram",
+    "Facebook": "Facebook",
+    "Google": "Google",
+    "WhatsApp": "WhatsApp",
+    "TikTok": "TikTok",
+    "Direct": "Acesso direto",
+    "Other": "Outros"
+  };
 
   async function loadInsightsData() {
     var days = insightsDateRange ? Number(insightsDateRange.value) : 0;
@@ -2050,7 +2061,7 @@ function initAdminApp() {
       renderInsightsChart(visitData.labels || [], visitData.counts || []);
       renderVisitorInsights(visitorData);
     } catch (err) {
-      console.error("Failed to load insights:", err);
+      console.error("Erro ao carregar análises:", err);
     }
   }
 
@@ -2072,7 +2083,7 @@ function initAdminApp() {
       ctx.fillStyle = "#8e6b6e";
       ctx.font = "13px Cinzel, serif";
       ctx.textAlign = "center";
-      ctx.fillText("No visit data for this period", W / 2, H / 2);
+      ctx.fillText("Sem dados de visitas para este período", W / 2, H / 2);
       return;
     }
 
@@ -2084,10 +2095,9 @@ function initAdminApp() {
     var chartH = H - padTop - padBottom;
 
     var maxVal = Math.max.apply(null, counts) || 1;
-    // Round up to nice number
     var niceMax = Math.ceil(maxVal / 5) * 5 || 5;
 
-    // Grid lines
+    // Linhas de grade
     ctx.strokeStyle = "#f0c9cb";
     ctx.lineWidth = 0.5;
     ctx.fillStyle = "#8e6b6e";
@@ -2105,20 +2115,18 @@ function initAdminApp() {
     var barW = Math.max(8, Math.min(40, (chartW / labels.length) * 0.6));
     var gap = (chartW - barW * labels.length) / (labels.length + 1);
 
-    // Bars
+    // Barras
     var accentColor = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#C5898E";
     for (var i = 0; i < labels.length; i++) {
       var x = padLeft + gap + i * (barW + gap);
       var barH = (counts[i] / niceMax) * chartH;
       var y = padTop + chartH - barH;
 
-      // Bar gradient
       var grad = ctx.createLinearGradient(x, y, x, padTop + chartH);
       grad.addColorStop(0, accentColor);
       grad.addColorStop(1, "#fde8e9");
       ctx.fillStyle = grad;
 
-      // Rounded top
       var radius = Math.min(barW / 2, 6);
       ctx.beginPath();
       ctx.moveTo(x, padTop + chartH);
@@ -2130,7 +2138,7 @@ function initAdminApp() {
       ctx.closePath();
       ctx.fill();
 
-      // Count label on top of bar
+      // Valor em cima da barra
       ctx.fillStyle = "#4a2c2e";
       ctx.font = "10px Cinzel, serif";
       ctx.textAlign = "center";
@@ -2138,15 +2146,14 @@ function initAdminApp() {
         ctx.fillText(String(counts[i]), x + barW / 2, y - 5);
       }
 
-      // Date label
+      // Rótulo da data
       ctx.fillStyle = "#8e6b6e";
       ctx.font = "10px Cinzel, serif";
       ctx.textAlign = "center";
       var dateLabel = labels[i];
-      // Shorten to MM/DD
       if (dateLabel && dateLabel.length >= 10) {
         var parts = dateLabel.split("-");
-        dateLabel = parts[1] + "/" + parts[2];
+        dateLabel = parts[2] + "/" + parts[1];
       }
       ctx.save();
       ctx.translate(x + barW / 2, padTop + chartH + 12);
@@ -2166,7 +2173,7 @@ function initAdminApp() {
     var referrers = data.referrers || {};
 
     if (total === 0) {
-      insightsVisitorData.innerHTML = '<div class="insights-loading">No visitor data for this period</div>';
+      insightsVisitorData.innerHTML = '<div class="insights-loading">Sem dados de visitantes para este período</div>';
       return;
     }
 
@@ -2176,14 +2183,16 @@ function initAdminApp() {
 
     sources.forEach(function (source) {
       var count = referrers[source] || 0;
-      var pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+      var pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0,0";
+
+      var translatedSource = sourceTranslations[source] || source;
 
       var card = document.createElement("div");
       card.className = "insights-visitor-card";
       card.innerHTML =
-        '<div class="insights-visitor-label">' + escapeHtml(source) + '</div>' +
+        '<div class="insights-visitor-label">' + escapeHtml(translatedSource) + '</div>' +
         '<div class="insights-visitor-value">' + pct + '%</div>' +
-        '<div class="insights-visitor-count">' + count + ' visit' + (count !== 1 ? 's' : '') + '</div>';
+        '<div class="insights-visitor-count">' + count + ' visita' + (count !== 1 ? 's' : '') + '</div>';
       insightsVisitorData.appendChild(card);
     });
   }
@@ -2201,7 +2210,7 @@ function initAdminApp() {
     insightsPageFilter.addEventListener("change", loadInsightsData);
   }
 
-  /* ---- Product stats (view counts + cart adds) ---- */
+  /* ---- Estatísticas de produtos (visualizações + carrinho) ---- */
 
   async function loadProductStats() {
     try {
@@ -2211,7 +2220,7 @@ function initAdminApp() {
       productStatsCache = { views: data.views || {}, cartAdds: data.cartAdds || {} };
       updateProductStatLabels();
     } catch (err) {
-      console.error("Failed to load product stats:", err);
+      console.error("Erro ao carregar estatísticas de produtos:", err);
     }
   }
 
@@ -2224,11 +2233,11 @@ function initAdminApp() {
       var cartEl = card.querySelector(".admin-product-cart-adds");
       if (viewsEl) {
         var vc = productStatsCache.views[pid] || 0;
-        viewsEl.textContent = vc + " view" + (vc !== 1 ? "s" : "");
+        viewsEl.textContent = vc + " visualizaç" + (vc !== 1 ? "ões" : "ão");
       }
       if (cartEl) {
         var cc = productStatsCache.cartAdds[pid] || 0;
-        cartEl.textContent = cc + " added to cart";
+        cartEl.textContent = cc + " adicionado" + (cc !== 1 ? "s" : "") + " ao carrinho";
       }
     });
   }
