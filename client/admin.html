@@ -584,6 +584,121 @@
         }
       }
 
+      /* Insights page */
+      .insights-card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        padding: 20px 18px 22px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--border-soft);
+      }
+      .insights-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+      .insights-card-subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin: 0 0 14px;
+        line-height: 1.5;
+      }
+      .insights-filters {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 12px 0 16px;
+      }
+      .insights-filter-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .insights-select {
+        width: auto;
+        min-width: 130px;
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+      .insights-total-box {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+      }
+      .insights-total-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      .insights-total-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .insights-chart-container {
+        width: 100%;
+        overflow-x: auto;
+      }
+      .insights-chart-container canvas {
+        width: 100%;
+        max-width: 100%;
+        height: 260px;
+      }
+      .insights-visitor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+      }
+      .insights-visitor-card {
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 12px;
+        padding: 14px 12px;
+        text-align: center;
+      }
+      .insights-visitor-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .insights-visitor-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .insights-visitor-count {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+      .insights-loading {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 20px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      /* Product stats (view count, cart count) */
+      .admin-product-stats-row {
+        display: flex;
+        gap: 10px;
+        padding: 0 14px 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+        opacity: 0.6;
+      }
+      @media (max-width: 640px) {
+        .insights-filters {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .insights-total-box {
+          margin-left: 0;
+        }
+      }
+
       /* On small devices, hide header actions and show hamburger with dropdown */
       body.is-small-device.admin-page .admin-header-actions {
         display: none;
@@ -618,6 +733,9 @@
         <div class="nav-left">
           <button class="nav-link active" data-view="home" data-mobile-priority="true">
             Início
+          </button>
+          <button class="nav-link" data-view="insights" data-mobile-priority="true">
+            Insights
           </button>
           <button class="nav-link" data-view="about" data-mobile-priority="true">
             Sobre nós
@@ -810,6 +928,56 @@
             <p class="home-highlight-text">
               Explore nossas coleções de babydoll, camisolas, longos e infantil.
             </p>
+          </div>
+        </section>
+
+        <!-- VISÃO INSIGHTS -->
+        <section id="view-insights" class="view">
+          <h2 class="section-title">Insights</h2>
+
+          <!-- Visit Tracker -->
+          <div class="insights-card">
+            <h3 class="insights-card-title">Visit Tracker</h3>
+            <div class="insights-filters">
+              <div class="insights-filter-group">
+                <label class="admin-label">Date Range:</label>
+                <select id="insightsDateRange" class="admin-select insights-select">
+                  <option value="0" selected>Today</option>
+                  <option value="7">7 days</option>
+                  <option value="30">30 days</option>
+                  <option value="90">90 days</option>
+                </select>
+              </div>
+              <div class="insights-filter-group">
+                <label class="admin-label">Pages:</label>
+                <select id="insightsPageFilter" class="admin-select insights-select">
+                  <option value="all" selected>Site (All Pages)</option>
+                  <option value="/">Home</option>
+                  <option value="/#sobre-nos">Sobre nós</option>
+                  <option value="/#babydoll">Babydoll</option>
+                  <option value="/#camisolas">Camisolas</option>
+                  <option value="/#longos">Longos</option>
+                  <option value="/#infantil">Infantil</option>
+                  <option value="/#checkout">Checkout</option>
+                </select>
+              </div>
+              <div class="insights-total-box">
+                <span class="insights-total-label">Total:</span>
+                <span id="insightsTotalVisits" class="insights-total-value">0</span>
+              </div>
+            </div>
+            <div class="insights-chart-container">
+              <canvas id="insightsChart" width="800" height="300"></canvas>
+            </div>
+          </div>
+
+          <!-- Visitor Insights -->
+          <div class="insights-card" style="margin-top:20px">
+            <h3 class="insights-card-title">Visitor Insights</h3>
+            <p class="insights-card-subtitle">Traffic sources based on referrer data. Demographic data (gender, age) is not collected as it cannot be determined reliably or lawfully without explicit user consent.</p>
+            <div id="insightsVisitorData" class="insights-visitor-grid">
+              <div class="insights-loading">Loading...</div>
+            </div>
           </div>
         </section>
 
@@ -1127,6 +1295,10 @@
                 <span class="admin-product-price"></span>
                 <span class="admin-product-stock"></span>
               </div>
+            </div>
+            <div class="admin-product-stats-row">
+              <span class="admin-product-views"></span>
+              <span class="admin-product-cart-adds"></span>
             </div>
             <div class="admin-product-actions-row">
               <button
