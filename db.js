@@ -101,6 +101,50 @@ async function initDatabase(db) {
       ADD COLUMN IF NOT EXISTS discount_label TEXT;
   `);
 
+  // Analytics tables
+  await pg.query(`
+    CREATE TABLE IF NOT EXISTS visits (
+      id SERIAL PRIMARY KEY,
+      page TEXT NOT NULL DEFAULT '/',
+      visitor_id TEXT NOT NULL,
+      referrer TEXT NOT NULL DEFAULT '',
+      visited_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pg.query(`
+    CREATE INDEX IF NOT EXISTS idx_visits_visitor_page ON visits (visitor_id, page, visited_at);
+  `);
+  await pg.query(`
+    CREATE INDEX IF NOT EXISTS idx_visits_visited_at ON visits (visited_at);
+  `);
+
+  await pg.query(`
+    CREATE TABLE IF NOT EXISTS product_views (
+      id SERIAL PRIMARY KEY,
+      product_id TEXT NOT NULL,
+      visitor_id TEXT NOT NULL,
+      viewed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pg.query(`
+    CREATE INDEX IF NOT EXISTS idx_product_views_dedup ON product_views (visitor_id, product_id, viewed_at);
+  `);
+
+  await pg.query(`
+    CREATE TABLE IF NOT EXISTS cart_events (
+      id SERIAL PRIMARY KEY,
+      product_id TEXT NOT NULL,
+      visitor_id TEXT NOT NULL,
+      added_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pg.query(`
+    CREATE INDEX IF NOT EXISTS idx_cart_events_dedup ON cart_events (visitor_id, product_id, added_at);
+  `);
+
   // 2) Hydrate homepage from DB, or seed from current in memory default
   const homeResult = await pg.query(
     "SELECT about_text, about_long_text, hero_images, notices, theme, about_images, logo_url FROM homepage WHERE id = 1"
@@ -306,9 +350,232 @@ async function persistProductDelete(id) {
   await pg.query("DELETE FROM products WHERE id = $1", [String(id)]);
 }
 
+/* ------------------------------------------------------------------ */
+/* Analytics: visits, product views, cart events                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Record a page visit with deduplication.
+ * Uses a visitor fingerprint (session id or IP+UA hash) and a cooldown
+ * window (default 30 minutes) so rapid refreshes don't inflate counts.
+ */
+async function recordVisit({ page, visitorId, referrer }) {
+  const pg = getPool();
+  if (!pg) return;
+
+  const COOLDOWN_MINUTES = 30;
+  try {
+    // Only insert if there is no visit from this visitor+page in the cooldown window
+    await pg.query(
+      `INSERT INTO visits (page, visitor_id, referrer)
+       SELECT $1, $2, $3
+       WHERE NOT EXISTS (
+         SELECT 1 FROM visits
+         WHERE visitor_id = $2 AND page = $1
+           AND visited_at > NOW() - INTERVAL '${COOLDOWN_MINUTES} minutes'
+       )`,
+      [String(page || "/"), String(visitorId || "unknown"), String(referrer || "")]
+    );
+  } catch (err) {
+    console.error("[db] Error recording visit:", err);
+  }
+}
+
+/**
+ * Record a product view with deduplication (same cooldown approach).
+ */
+async function recordProductView({ productId, visitorId }) {
+  const pg = getPool();
+  if (!pg) return;
+
+  const COOLDOWN_MINUTES = 30;
+  try {
+    await pg.query(
+      `INSERT INTO product_views (product_id, visitor_id)
+       SELECT $1, $2
+       WHERE NOT EXISTS (
+         SELECT 1 FROM product_views
+         WHERE visitor_id = $2 AND product_id = $1
+           AND viewed_at > NOW() - INTERVAL '${COOLDOWN_MINUTES} minutes'
+       )`,
+      [String(productId), String(visitorId || "unknown")]
+    );
+  } catch (err) {
+    console.error("[db] Error recording product view:", err);
+  }
+}
+
+/**
+ * Record a cart addition event with deduplication.
+ */
+async function recordCartAdd({ productId, visitorId }) {
+  const pg = getPool();
+  if (!pg) return;
+
+  const COOLDOWN_MINUTES = 10;
+  try {
+    await pg.query(
+      `INSERT INTO cart_events (product_id, visitor_id)
+       SELECT $1, $2
+       WHERE NOT EXISTS (
+         SELECT 1 FROM cart_events
+         WHERE visitor_id = $2 AND product_id = $1
+           AND added_at > NOW() - INTERVAL '${COOLDOWN_MINUTES} minutes'
+       )`,
+      [String(productId), String(visitorId || "unknown")]
+    );
+  } catch (err) {
+    console.error("[db] Error recording cart add:", err);
+  }
+}
+
+/**
+ * Get visit data for the insights dashboard.
+ * @param {number} days - Number of days to look back (0 = today only)
+ * @param {string} [page] - Optional page filter
+ */
+async function getVisitStats({ days, page }) {
+  const pg = getPool();
+  if (!pg) return { labels: [], counts: [], total: 0 };
+
+  try {
+    let interval;
+    if (days === 0) {
+      interval = "NOW()::date";
+    } else {
+      interval = `NOW() - INTERVAL '${Number(days) || 7} days'`;
+    }
+
+    const params = [];
+    let pageFilter = "";
+    if (page && page !== "all") {
+      params.push(String(page));
+      pageFilter = ` AND page = $${params.length}`;
+    }
+
+    // Get daily counts
+    const result = await pg.query(
+      `SELECT visited_at::date AS day, COUNT(*)::int AS count
+       FROM visits
+       WHERE visited_at >= ${interval}${pageFilter}
+       GROUP BY day
+       ORDER BY day ASC`,
+      params
+    );
+
+    // Get total
+    const totalResult = await pg.query(
+      `SELECT COUNT(*)::int AS total FROM visits WHERE visited_at >= ${interval}${pageFilter}`,
+      params
+    );
+
+    const labels = result.rows.map((r) => r.day.toISOString().split("T")[0]);
+    const counts = result.rows.map((r) => r.count);
+    const total = totalResult.rows[0]?.total || 0;
+
+    return { labels, counts, total };
+  } catch (err) {
+    console.error("[db] Error getting visit stats:", err);
+    return { labels: [], counts: [], total: 0 };
+  }
+}
+
+/**
+ * Get referrer-based visitor insights (e.g. Instagram referrals).
+ */
+async function getVisitorInsights({ days, page }) {
+  const pg = getPool();
+  if (!pg) return { total: 0, referrers: {} };
+
+  try {
+    let interval;
+    if (days === 0) {
+      interval = "NOW()::date";
+    } else {
+      interval = `NOW() - INTERVAL '${Number(days) || 7} days'`;
+    }
+
+    const params = [];
+    let pageFilter = "";
+    if (page && page !== "all") {
+      params.push(String(page));
+      pageFilter = ` AND page = $${params.length}`;
+    }
+
+    const totalResult = await pg.query(
+      `SELECT COUNT(*)::int AS total FROM visits WHERE visited_at >= ${interval}${pageFilter}`,
+      params
+    );
+
+    const referrerResult = await pg.query(
+      `SELECT
+         CASE
+           WHEN referrer ILIKE '%instagram%' THEN 'Instagram'
+           WHEN referrer ILIKE '%facebook%' OR referrer ILIKE '%fb.%' THEN 'Facebook'
+           WHEN referrer ILIKE '%google%' THEN 'Google'
+           WHEN referrer ILIKE '%whatsapp%' THEN 'WhatsApp'
+           WHEN referrer ILIKE '%tiktok%' THEN 'TikTok'
+           WHEN referrer = '' OR referrer IS NULL THEN 'Direct'
+           ELSE 'Other'
+         END AS source,
+         COUNT(*)::int AS count
+       FROM visits
+       WHERE visited_at >= ${interval}${pageFilter}
+       GROUP BY source
+       ORDER BY count DESC`,
+      params
+    );
+
+    const total = totalResult.rows[0]?.total || 0;
+    const referrers = {};
+    referrerResult.rows.forEach((r) => {
+      referrers[r.source] = r.count;
+    });
+
+    return { total, referrers };
+  } catch (err) {
+    console.error("[db] Error getting visitor insights:", err);
+    return { total: 0, referrers: {} };
+  }
+}
+
+/**
+ * Get product view counts and cart add counts for admin display.
+ */
+async function getProductStats() {
+  const pg = getPool();
+  if (!pg) return { views: {}, cartAdds: {} };
+
+  try {
+    const viewsResult = await pg.query(
+      `SELECT product_id, COUNT(*)::int AS count FROM product_views GROUP BY product_id`
+    );
+    const cartResult = await pg.query(
+      `SELECT product_id, COUNT(*)::int AS count FROM cart_events GROUP BY product_id`
+    );
+
+    const views = {};
+    viewsResult.rows.forEach((r) => { views[r.product_id] = r.count; });
+
+    const cartAdds = {};
+    cartResult.rows.forEach((r) => { cartAdds[r.product_id] = r.count; });
+
+    return { views, cartAdds };
+  } catch (err) {
+    console.error("[db] Error getting product stats:", err);
+    return { views: {}, cartAdds: {} };
+  }
+}
+
 module.exports = {
   initDatabase,
   persistHomepage,
   persistProductUpsert,
-  persistProductDelete
+  persistProductDelete,
+  recordVisit,
+  recordProductView,
+  recordCartAdd,
+  getVisitStats,
+  getVisitorInsights,
+  getProductStats
 };

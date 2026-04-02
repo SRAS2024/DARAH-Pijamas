@@ -19,7 +19,13 @@ const {
   initDatabase,
   persistHomepage,
   persistProductUpsert,
-  persistProductDelete
+  persistProductDelete,
+  recordVisit,
+  recordProductView,
+  recordCartAdd,
+  getVisitStats,
+  getVisitorInsights,
+  getProductStats
 } = require("./db");
 
 const app = express();
@@ -1012,6 +1018,10 @@ app.post("/api/cart/add", (req, res) => {
     cart.items.push({ productId, quantity: 1 });
   }
 
+  // Track cart addition for analytics
+  const visitorId = getVisitorId(req);
+  recordCartAdd({ productId, visitorId });
+
   res.json(summarizeCart(cart));
 });
 
@@ -1076,6 +1086,57 @@ app.post("/api/checkout-link", (req, res) => {
   const phone = "5565999883400";
   const text = encodeURIComponent(lines.join("\n"));
   res.json({ url: `https://wa.me/${phone}?text=${text}` });
+});
+
+/* ------------------------------------------------------------------ */
+/* Analytics: visit tracking & insights                                */
+/* ------------------------------------------------------------------ */
+
+function getVisitorId(req) {
+  // Use session id as primary identifier; fall back to IP+UA hash
+  if (req.session && req.session.id) return req.session.id;
+  const raw = (req.ip || req.connection?.remoteAddress || "") + "|" + (req.headers["user-agent"] || "");
+  return crypto.createHash("sha256").update(raw).digest("hex").slice(0, 32);
+}
+
+// Public: record a visit (called from storefront JS)
+app.post("/api/track/visit", (req, res) => {
+  const { page, referrer } = req.body || {};
+  const visitorId = getVisitorId(req);
+  // Fire and forget
+  recordVisit({ page: page || "/", visitorId, referrer: referrer || "" });
+  res.json({ ok: true });
+});
+
+// Public: record a product view
+app.post("/api/track/product-view", (req, res) => {
+  const { productId } = req.body || {};
+  if (!productId) return res.status(400).json({ error: "Missing productId" });
+  const visitorId = getVisitorId(req);
+  recordProductView({ productId, visitorId });
+  res.json({ ok: true });
+});
+
+// Admin: get visit stats for graph
+app.get("/api/admin/insights/visits", requireAdmin, async (req, res) => {
+  const days = Number(req.query.days);
+  const page = req.query.page || "all";
+  const data = await getVisitStats({ days: isNaN(days) ? 0 : days, page });
+  res.json(data);
+});
+
+// Admin: get visitor insights (referrer breakdown)
+app.get("/api/admin/insights/visitors", requireAdmin, async (req, res) => {
+  const days = Number(req.query.days);
+  const page = req.query.page || "all";
+  const data = await getVisitorInsights({ days: isNaN(days) ? 0 : days, page });
+  res.json(data);
+});
+
+// Admin: get product view + cart add stats
+app.get("/api/admin/insights/product-stats", requireAdmin, async (_req, res) => {
+  const data = await getProductStats();
+  res.json(data);
 });
 
 /* ------------------------------------------------------------------ */

@@ -964,6 +964,25 @@ function initStorefrontApp() {
 
     card.appendChild(content);
 
+    // Track product view when card enters viewport
+    if (window.IntersectionObserver && product.id) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            observer.disconnect();
+            try {
+              fetch("/api/track/product-view", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ productId: product.id })
+              }).catch(function () { /* silent */ });
+            } catch (e) { /* silent */ }
+          }
+        });
+      }, { threshold: 0.5 });
+      observer.observe(card);
+    }
+
     return card;
   }
 
@@ -1283,6 +1302,31 @@ function initStorefrontApp() {
   loadHomepage();
   renderCheckout();
   loadProducts();
+
+  // Track page visit for analytics
+  (function trackVisit() {
+    var page = window.location.pathname + (window.location.hash || "");
+    var referrer = document.referrer || "";
+    try {
+      fetch("/api/track/visit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ page: page, referrer: referrer })
+      }).catch(function () { /* silent */ });
+    } catch (e) { /* silent */ }
+
+    // Also track on hash changes (SPA navigation)
+    window.addEventListener("hashchange", function () {
+      var newPage = window.location.pathname + (window.location.hash || "");
+      try {
+        fetch("/api/track/visit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ page: newPage, referrer: referrer })
+        }).catch(function () { /* silent */ });
+      } catch (e) { /* silent */ }
+    });
+  })();
 }
 
 /* =========================================================
@@ -1306,6 +1350,7 @@ function initAdminApp() {
   const navLinks = Array.from(document.querySelectorAll(".main-nav .nav-link"));
   const views = {
     home: document.getElementById("view-home"),
+    insights: document.getElementById("view-insights"),
     about: document.getElementById("view-about"),
     babydoll: document.getElementById("view-babydoll"),
     camisolas: document.getElementById("view-camisolas"),
@@ -1468,6 +1513,11 @@ function initAdminApp() {
 
     closeMobileMenu();
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Refresh insights data when switching to insights tab
+    if (id === "insights") {
+      loadInsightsData();
+    }
   }
 
   /* ---- Mobile menu ---- */
@@ -1934,7 +1984,7 @@ function initAdminApp() {
   /* ---- Load admin data (homepage + products) ---- */
 
   async function loadAdminData() {
-    await Promise.all([loadHomepageData(), loadProducts()]);
+    await Promise.all([loadHomepageData(), loadProducts(), loadInsightsData(), loadProductStats()]);
   }
 
   async function loadHomepageData() {
@@ -1968,9 +2018,219 @@ function initAdminApp() {
       var data = await res.json();
       allProducts = Array.isArray(data) ? data : [];
       renderAdminProducts();
+      updateProductStatLabels();
     } catch (err) {
       console.error("Failed to load products:", err);
     }
+  }
+
+  /* ---- Insights dashboard ---- */
+
+  var insightsDateRange = document.getElementById("insightsDateRange");
+  var insightsPageFilter = document.getElementById("insightsPageFilter");
+  var insightsTotalVisits = document.getElementById("insightsTotalVisits");
+  var insightsChart = document.getElementById("insightsChart");
+  var insightsVisitorData = document.getElementById("insightsVisitorData");
+  var productStatsCache = { views: {}, cartAdds: {} };
+
+  async function loadInsightsData() {
+    var days = insightsDateRange ? Number(insightsDateRange.value) : 0;
+    var page = insightsPageFilter ? insightsPageFilter.value : "all";
+
+    try {
+      var [visitRes, visitorRes] = await Promise.all([
+        fetch("/api/admin/insights/visits?days=" + days + "&page=" + encodeURIComponent(page), { cache: "no-store" }),
+        fetch("/api/admin/insights/visitors?days=" + days + "&page=" + encodeURIComponent(page), { cache: "no-store" })
+      ]);
+
+      var visitData = visitRes.ok ? await visitRes.json() : { labels: [], counts: [], total: 0 };
+      var visitorData = visitorRes.ok ? await visitorRes.json() : { total: 0, referrers: {} };
+
+      if (insightsTotalVisits) insightsTotalVisits.textContent = String(visitData.total || 0);
+      renderInsightsChart(visitData.labels || [], visitData.counts || []);
+      renderVisitorInsights(visitorData);
+    } catch (err) {
+      console.error("Failed to load insights:", err);
+    }
+  }
+
+  function renderInsightsChart(labels, counts) {
+    if (!insightsChart) return;
+    var ctx = insightsChart.getContext("2d");
+    var W = insightsChart.parentElement.clientWidth || 800;
+    var H = 260;
+    var dpr = window.devicePixelRatio || 1;
+    insightsChart.width = W * dpr;
+    insightsChart.height = H * dpr;
+    insightsChart.style.width = W + "px";
+    insightsChart.style.height = H + "px";
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, W, H);
+
+    if (!labels.length) {
+      ctx.fillStyle = "#8e6b6e";
+      ctx.font = "13px Cinzel, serif";
+      ctx.textAlign = "center";
+      ctx.fillText("No visit data for this period", W / 2, H / 2);
+      return;
+    }
+
+    var padLeft = 50;
+    var padRight = 20;
+    var padTop = 20;
+    var padBottom = 50;
+    var chartW = W - padLeft - padRight;
+    var chartH = H - padTop - padBottom;
+
+    var maxVal = Math.max.apply(null, counts) || 1;
+    // Round up to nice number
+    var niceMax = Math.ceil(maxVal / 5) * 5 || 5;
+
+    // Grid lines
+    ctx.strokeStyle = "#f0c9cb";
+    ctx.lineWidth = 0.5;
+    ctx.fillStyle = "#8e6b6e";
+    ctx.font = "11px Cinzel, serif";
+    ctx.textAlign = "right";
+    for (var g = 0; g <= 5; g++) {
+      var yG = padTop + chartH - (g / 5) * chartH;
+      ctx.beginPath();
+      ctx.moveTo(padLeft, yG);
+      ctx.lineTo(padLeft + chartW, yG);
+      ctx.stroke();
+      ctx.fillText(String(Math.round((g / 5) * niceMax)), padLeft - 8, yG + 4);
+    }
+
+    var barW = Math.max(8, Math.min(40, (chartW / labels.length) * 0.6));
+    var gap = (chartW - barW * labels.length) / (labels.length + 1);
+
+    // Bars
+    var accentColor = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#C5898E";
+    for (var i = 0; i < labels.length; i++) {
+      var x = padLeft + gap + i * (barW + gap);
+      var barH = (counts[i] / niceMax) * chartH;
+      var y = padTop + chartH - barH;
+
+      // Bar gradient
+      var grad = ctx.createLinearGradient(x, y, x, padTop + chartH);
+      grad.addColorStop(0, accentColor);
+      grad.addColorStop(1, "#fde8e9");
+      ctx.fillStyle = grad;
+
+      // Rounded top
+      var radius = Math.min(barW / 2, 6);
+      ctx.beginPath();
+      ctx.moveTo(x, padTop + chartH);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.lineTo(x + barW - radius, y);
+      ctx.quadraticCurveTo(x + barW, y, x + barW, y + radius);
+      ctx.lineTo(x + barW, padTop + chartH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Count label on top of bar
+      ctx.fillStyle = "#4a2c2e";
+      ctx.font = "10px Cinzel, serif";
+      ctx.textAlign = "center";
+      if (counts[i] > 0) {
+        ctx.fillText(String(counts[i]), x + barW / 2, y - 5);
+      }
+
+      // Date label
+      ctx.fillStyle = "#8e6b6e";
+      ctx.font = "10px Cinzel, serif";
+      ctx.textAlign = "center";
+      var dateLabel = labels[i];
+      // Shorten to MM/DD
+      if (dateLabel && dateLabel.length >= 10) {
+        var parts = dateLabel.split("-");
+        dateLabel = parts[1] + "/" + parts[2];
+      }
+      ctx.save();
+      ctx.translate(x + barW / 2, padTop + chartH + 12);
+      if (labels.length > 15) {
+        ctx.rotate(-Math.PI / 4);
+      }
+      ctx.fillText(dateLabel, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  function renderVisitorInsights(data) {
+    if (!insightsVisitorData) return;
+    insightsVisitorData.innerHTML = "";
+
+    var total = data.total || 0;
+    var referrers = data.referrers || {};
+
+    if (total === 0) {
+      insightsVisitorData.innerHTML = '<div class="insights-loading">No visitor data for this period</div>';
+      return;
+    }
+
+    var sources = Object.keys(referrers).sort(function (a, b) {
+      return (referrers[b] || 0) - (referrers[a] || 0);
+    });
+
+    sources.forEach(function (source) {
+      var count = referrers[source] || 0;
+      var pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+
+      var card = document.createElement("div");
+      card.className = "insights-visitor-card";
+      card.innerHTML =
+        '<div class="insights-visitor-label">' + escapeHtml(source) + '</div>' +
+        '<div class="insights-visitor-value">' + pct + '%</div>' +
+        '<div class="insights-visitor-count">' + count + ' visit' + (count !== 1 ? 's' : '') + '</div>';
+      insightsVisitorData.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  if (insightsDateRange) {
+    insightsDateRange.addEventListener("change", loadInsightsData);
+  }
+  if (insightsPageFilter) {
+    insightsPageFilter.addEventListener("change", loadInsightsData);
+  }
+
+  /* ---- Product stats (view counts + cart adds) ---- */
+
+  async function loadProductStats() {
+    try {
+      var res = await fetch("/api/admin/insights/product-stats", { cache: "no-store" });
+      if (!res.ok) return;
+      var data = await res.json();
+      productStatsCache = { views: data.views || {}, cartAdds: data.cartAdds || {} };
+      updateProductStatLabels();
+    } catch (err) {
+      console.error("Failed to load product stats:", err);
+    }
+  }
+
+  function updateProductStatLabels() {
+    var cards = document.querySelectorAll(".admin-product-card[data-product-id]");
+    cards.forEach(function (card) {
+      var pid = card.dataset.productId;
+      if (!pid) return;
+      var viewsEl = card.querySelector(".admin-product-views");
+      var cartEl = card.querySelector(".admin-product-cart-adds");
+      if (viewsEl) {
+        var vc = productStatsCache.views[pid] || 0;
+        viewsEl.textContent = vc + " view" + (vc !== 1 ? "s" : "");
+      }
+      if (cartEl) {
+        var cc = productStatsCache.cartAdds[pid] || 0;
+        cartEl.textContent = cc + " added to cart";
+      }
+    });
   }
 
   /* ---- Populate homepage form ---- */
