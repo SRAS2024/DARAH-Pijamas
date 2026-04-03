@@ -12,7 +12,7 @@ DARAH Pijamas is a modern e-commerce storefront for elegant and comfortable slee
 
 - **Single-page navigation** with smooth category views: Babydoll, Camisolas, Longos, and Infantil
 - **Product browsing** with multi-image galleries (up to 5 images per product), lazy-loaded for performance
-- **Per-visitor cart sessions** — every visitor gets a private server-side cart via secure httpOnly cookies
+- **Per-visitor cart** — cart state is persisted in browser localStorage and mirrored to a server-side session via secure httpOnly cookies
 - **Streamlined checkout** with subtotal summary and one-click WhatsApp order completion
 - **Discount labels** with strikethrough original pricing and stock availability checks
 - **Site-wide announcements** and customizable notices
@@ -32,8 +32,9 @@ DARAH Pijamas is a modern e-commerce storefront for elegant and comfortable slee
 - **Stock and pricing management** including discount tracking
 - **Theme switcher** for seasonal branding
 - **Logo management**: upload a custom site logo/favicon
-- **Batch image compression** to optimize stored product images
+- **Batch image save** — persists client-side compressed images back to the database in bulk (images are compressed in-browser before upload)
 - **Product debug view** with category counts and diagnostics
+- **Insights dashboard** with visit statistics, referrer source breakdown (Instagram, Facebook, Google, WhatsApp, TikTok, Direct), and per-product view and cart-add counts
 
 ---
 
@@ -85,6 +86,8 @@ DARAH-Pijamas/
 | `POST` | `/api/cart/add` | Add a product to the cart |
 | `POST` | `/api/cart/update` | Update cart item quantity |
 | `POST` | `/api/checkout-link` | Generate a WhatsApp checkout link with order summary |
+| `POST` | `/api/track/visit` | Record a page visit for analytics |
+| `POST` | `/api/track/product-view` | Record a product view for analytics |
 
 ### Admin Endpoints (authentication required)
 
@@ -100,7 +103,10 @@ DARAH-Pijamas/
 | `PUT` | `/api/products/:id` | Update an existing product |
 | `DELETE` | `/api/products/:id` | Delete a product |
 | `PUT` | `/api/admin/logo` | Upload a custom site logo |
-| `POST` | `/api/admin/compress-images` | Batch-compress stored product images |
+| `POST` | `/api/admin/compress-images` | Batch-persist client-compressed product images |
+| `GET` | `/api/admin/insights/visits` | Visit counts by day (accepts `days` and `page` query params) |
+| `GET` | `/api/admin/insights/visitors` | Referrer source breakdown (accepts `days` and `page` query params) |
+| `GET` | `/api/admin/insights/product-stats` | Per-product view and cart-add counts |
 
 ### SEO and Meta Endpoints
 
