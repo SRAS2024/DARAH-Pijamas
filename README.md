@@ -65,7 +65,7 @@ the storefront and admin panel.
 | Catalogue seeded | **20 products** — 5 Babydoll · 5 Camisolas · 5 Longos · 5 Infantil |
 | Homepage content | About text, 3 hero images, 3 notices, brand logo |
 | About page content | Long story text + 4-image collage |
-| Analytics seeded | ~710 visits · ~845 product views · 165 cart events (30-day spread) |
+| Analytics data | 30 days of demo visits, product views and cart events — see [§6.2](#62-tables-in-the-database) for live counts |
 
 > ⚠️ The database name, role, password and admin credentials above are
 > **throw-away values created only for this proof run**. They are not
@@ -186,8 +186,12 @@ and total. Quantities update instantly and the totals recalculate.
 |---|---|
 | ![Cart](docs/screenshots/09-cart.png) | ![Cart updated](docs/screenshots/10-cart-updated.png) |
 
-The cart is persisted per visitor in `localStorage` (with a compact fallback
-encoding) and mirrored to a server-side session, so it survives reloads.
+The cart lives in the browser: it is persisted per visitor in `localStorage`
+(with a compact fallback encoding for large image data), so it survives page
+reloads. At checkout the cart items are sent to `POST /api/checkout-link`,
+which builds the WhatsApp order message server-side. *(The server also exposes
+session-based `/api/cart/*` endpoints; the storefront UI uses `localStorage` as
+the source of truth.)*
 
 ---
 
@@ -412,8 +416,9 @@ Real rows from the seeded database — the full 20-product catalogue, the
   Babydoll, Camisolas, Longos and Infantil.
 - **Multi-image products** (up to 5 images each) with an in-card carousel and a
   full-screen lightbox; images are lazy-loaded for performance.
-- **Per-visitor cart** persisted in `localStorage` and mirrored to a
-  server-side session via a secure `httpOnly` cookie.
+- **Per-visitor cart** kept in the browser via `localStorage` (with a compact
+  fallback encoding); checkout posts the cart to the server to build the
+  WhatsApp order.
 - **Order review** with quantity steppers, live subtotal/total and a one-click
   **WhatsApp checkout**.
 - **Promotions** — original price struck through plus a custom discount label.
@@ -446,7 +451,7 @@ Real rows from the seeded database — the full 20-product catalogue, the
 | Back end | Node.js, Express | REST API with gzip compression |
 | Front end | Vanilla JavaScript, HTML5, CSS3 | No frameworks — lightweight and fast |
 | Database | PostgreSQL | Falls back to an in-memory store if `DATABASE_URL` is unset |
-| Sessions | express-session | Secure `httpOnly` cookies for visitor/cart tracking |
+| Sessions | express-session | Secure `httpOnly` cookies for admin auth and analytics visitor tracking |
 | Deployment | Railway-ready | Works on any Node.js host with PostgreSQL |
 
 ---
